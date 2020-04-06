@@ -1,0 +1,39 @@
+name: AutoStep Build
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+      
+    - name: Fetch tags for GitVersion
+      run: git fetch --tags
+      
+    - name: Fetch master for GitVersion
+      if: github.ref != 'refs/heads/master'
+      run: git branch --create-reflog master origin/master
+      
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.100
+      
+    - name: GitVersion
+      id: gitversion  # step id used as reference for output values
+      uses: roryprimrose/rungitversion@v1.0.0
+           
+    - name: Build with dotnet
+      run: dotnet build --configuration Release
+    
+    - name: Run tests
+      run: dotnet test
+      
+    - name: Pack
+      run:  dotnet pack ./src/AutoStep.Extensions/AutoStep.Extensions.csproj --no-build -o artifacts -c Release --version-suffix  ${{ steps.gitversion.outputs.PreReleaseTag }}
+
+    - name: Push
+      run: dotnet nuget push artifacts/* -s https://f.feedz.io/autostep/ci/nuget/index.json -k ${{ secrets.FEEDZ_IO_KEY }}
