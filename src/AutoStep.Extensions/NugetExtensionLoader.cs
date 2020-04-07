@@ -26,7 +26,7 @@ namespace AutoStep.Extensions
     {
         private readonly NuGet.Common.ILogger nugetLogger;
         private readonly string packageDirectory;
-        private readonly ISettings settings;
+        private readonly ExtensionSourceSettings sourceSettings;
         private readonly DependencyContext hostDependencyContext;
 
         private readonly PackageSource NuGetSource = new PackageSource("https://api.nuget.org/v3/index.json", "nuget");
@@ -34,11 +34,10 @@ namespace AutoStep.Extensions
         public NugetExtensionLoader(string extensionsFolder, string frameworkName, ExtensionSourceSettings sourceSettings, DependencyContext hostDependencyContext, ILogger logger)
             : base(frameworkName)
         {
-            settings = sourceSettings.NuGetSettings;
-
             nugetLogger = new NuGetLogger(logger);
 
             packageDirectory = extensionsFolder;
+            this.sourceSettings = sourceSettings;
             this.hostDependencyContext = hostDependencyContext;
         }
 
@@ -46,9 +45,7 @@ namespace AutoStep.Extensions
         {
             var extensions = projConfig.GetExtensionConfiguration();
 
-            var packageSourceProvider = new PackageSourceProvider(settings);
-
-            var sourceRepositoryProvider = new SourceRepositoryProvider(packageSourceProvider, Repository.Provider.GetCoreV3());
+            var sourceRepositoryProvider = new SourceRepositoryProvider(sourceSettings.SourceProvider, Repository.Provider.GetCoreV3());
 
             var repositories = sourceRepositoryProvider.GetRepositories();
 
@@ -90,7 +87,7 @@ namespace AutoStep.Extensions
             var packageExtractionContext = new PackageExtractionContext(
                 PackageSaveMode.Defaultv3,
                 XmlDocFileSaveMode.Skip,
-                ClientPolicyContext.GetClientPolicy(settings, nugetLogger),
+                ClientPolicyContext.GetClientPolicy(sourceSettings.NuGetSettings, nugetLogger),
                 nugetLogger);
 
             var frameworkReducer = new FrameworkReducer();
@@ -116,7 +113,7 @@ namespace AutoStep.Extensions
                 var downloadResult = await downloadResource.GetDownloadResourceResultAsync(
                     package,
                     new PackageDownloadContext(sourceCacheContext),
-                    SettingsUtility.GetGlobalPackagesFolder(settings),
+                    SettingsUtility.GetGlobalPackagesFolder(sourceSettings.NuGetSettings),
                     nugetLogger,
                     cancelToken);
 

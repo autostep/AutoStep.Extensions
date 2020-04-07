@@ -19,26 +19,95 @@ namespace AutoStep.Extensions
     {
         internal ISettings NuGetSettings { get; private set; }
 
+        internal IPackageSourceProvider SourceProvider { get; private set; }
+
         public string RootDir { get; }
 
         public ExtensionSourceSettings(string rootDir)
         {
-            NuGetSettings = new Settings(rootDir);
+            NuGetSettings = Settings.LoadDefaultSettings(rootDir);
+            SourceProvider = new PackageSourceProvider(NuGetSettings);
             RootDir = rootDir;
         }
 
-        public void UseNuGetConfiguration()
+        public void AppendCustomSources(string[] sources)
         {
-            NuGetSettings = Settings.LoadDefaultSettings(RootDir);
+            SourceProvider = new CustomPackageSourceProvider(SourceProvider.LoadPackageSources().Concat(sources.Select(x => new PackageSource(x))));
         }
 
-        public void UseCustomSources(string[] sources)
+        public void ReplaceCustomSources(string[] sources)
         {
-            var packageSourceProvider = new PackageSourceProvider(Settings.LoadDefaultSettings(RootDir));
+            SourceProvider = new CustomPackageSourceProvider(sources.Select(x => new PackageSource(x)));
+        }
 
-            packageSourceProvider.SavePackageSources(sources.Select(s => new PackageSource(s)));
+        private class CustomPackageSourceProvider : IPackageSourceProvider
+        {
+            private List<PackageSource> sourceList;
 
-            NuGetSettings = packageSourceProvider.Settings;
+            public string ActivePackageSourceName => sourceList.LastOrDefault().Name;
+
+            public string DefaultPushSource => throw new NotImplementedException();
+
+            public event EventHandler PackageSourcesChanged;
+
+            public CustomPackageSourceProvider(IEnumerable<PackageSource> sources)
+            {
+                sourceList = new List<PackageSource>(sources);
+            }
+
+            public PackageSource GetPackageSourceByName(string name)
+            {
+                return sourceList.FirstOrDefault(x => x.Name == name);
+            }
+
+            public PackageSource GetPackageSourceBySource(string source)
+            {
+                return sourceList.FirstOrDefault(x => x.Source == source);
+            }
+
+            public bool IsPackageSourceEnabled(string name)
+            {
+                return GetPackageSourceByName(name)?.IsEnabled ?? false;
+            }
+
+            public IEnumerable<PackageSource> LoadPackageSources()
+            {
+                return sourceList;
+            }
+            public void AddPackageSource(PackageSource source)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void DisablePackageSource(string name)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void EnablePackageSource(string name)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void RemovePackageSource(string name)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void SaveActivePackageSource(PackageSource source)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void SavePackageSources(IEnumerable<PackageSource> sources)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void UpdatePackageSource(PackageSource source, bool updateCredentials, bool updateEnabled)
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }

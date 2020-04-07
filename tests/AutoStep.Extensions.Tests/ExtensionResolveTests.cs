@@ -79,7 +79,7 @@ namespace AutoStep.Extensions.Tests
             var config = configuration.Build();
 
             var sourceData = new ExtensionSourceSettings(testRootDirectory);
-            sourceData.UseCustomSources(new[] { nugetFileUri.AbsoluteUri });
+            sourceData.ReplaceCustomSources(new[] { nugetFileUri.AbsoluteUri });
 
             return new ExtensionTestContext
             {
