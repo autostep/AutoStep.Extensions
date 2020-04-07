@@ -32,8 +32,11 @@ jobs:
     - name: Run tests
       run: dotnet test --configuration Release --no-build
       
-    - name: Pack
+    - name: Pack Main
       run:  dotnet pack ./src/AutoStep.Extensions/AutoStep.Extensions.csproj --no-build -o artifacts -c Release --version-suffix  ${{ steps.gitversion.outputs.PreReleaseTag }}
+            
+    - name: Pack Abstractions
+      run:  dotnet pack ./src/AutoStep.Extensions.Abstractions/AutoStep.Extensions.Abstractions.csproj --no-build -o artifacts -c Release --version-suffix  ${{ steps.gitversion.outputs.PreReleaseTag }}
 
     - name: Push
       run: dotnet nuget push artifacts/* -s https://f.feedz.io/autostep/ci/nuget/index.json -k ${{ secrets.FEEDZ_IO_KEY }}

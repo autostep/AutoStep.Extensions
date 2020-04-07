@@ -21,6 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\AutoStep.Extensions.Abstractions\AutoStep.Extensions.Abstractions.csproj" />
     <ProjectReference Include="..\..\src\AutoStep.Extensions\AutoStep.Extensions.csproj" />
   </ItemGroup>
 
