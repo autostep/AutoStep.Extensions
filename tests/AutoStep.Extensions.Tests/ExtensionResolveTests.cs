@@ -110,6 +110,8 @@ namespace AutoStep.Extensions.Tests
                 set.LoadedPackages.Should().HaveCount(1);
                 set.LoadedPackages.First().PackageId.Should().Be("TestExtension1");
                 set.LoadedPackages.First().PackageVersion.Should().Be("1.0.0");
+
+                File.Exists(set.GetPackagePath("TestExtension1", "lib", "netstandard2.1", "TestExtension1.dll")).Should().BeTrue();
             }
         }
     }

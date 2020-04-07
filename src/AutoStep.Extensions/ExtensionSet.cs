@@ -106,6 +106,18 @@ namespace AutoStep.Extensions
 
         }
 
+        public string GetPackagePath(string packageId, params string[] directoryParts)
+        {
+            var package = extPackages.Packages.FirstOrDefault(p => p.PackageId == packageId);
+
+            if (package is null)
+            {
+                throw new InvalidOperationException("The specified package has not been loaded. Is it referenced by your extension?");
+            }
+
+            return Path.GetFullPath(Path.Combine(directoryParts), package.PackageFolder);
+        }
+
         public void Dispose()
         {
             if (isDisposed)
@@ -154,6 +166,7 @@ namespace AutoStep.Extensions
 
             return true;
         }
+
 
         private class ExtLoadContext : AssemblyLoadContext
         {
