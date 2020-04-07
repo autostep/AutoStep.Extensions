@@ -10,6 +10,8 @@ namespace AutoStep.Extensions.Abstractions
 
         IEnumerable<IPackageMetadata> LoadedPackages { get; }
 
+        bool IsPackageLoaded(string packageId);
+
         string GetPackagePath(string packageId, params string[] directoryParts);
     }
 }

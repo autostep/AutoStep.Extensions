@@ -118,6 +118,11 @@ namespace AutoStep.Extensions
             return Path.GetFullPath(Path.Combine(directoryParts), package.PackageFolder);
         }
 
+        public bool IsPackageLoaded(string packageId)
+        {
+            return extPackages.Packages.Any(p => p.PackageId == packageId);
+        }
+
         public void Dispose()
         {
             if (isDisposed)
