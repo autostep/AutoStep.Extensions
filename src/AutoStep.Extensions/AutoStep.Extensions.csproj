@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <VersionPrefix>1.0.0</VersionPrefix>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <CodeAnalysisRuleSet>..\..\Analysis.ruleset</CodeAnalysisRuleSet>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
@@ -28,7 +28,18 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="AutoStep" Version="1.0.0-extensions.257" />
+    <PackageReference Include="AutoStep" Version="1.0.0-extensions.264" />
+    <PackageReference Include="NuGet.Protocol" Version="5.5.1" />
+    <PackageReference Include="NuGet.Resolver" Version="5.5.1" />
+    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="3.1.3" />
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.8">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.113">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
 </Project>
