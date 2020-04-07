@@ -19,4 +19,4 @@ jobs:
       run: dotnet build --configuration Release /p:TreatWarningsAsErrors=true
     
     - name: Run tests
-      run: dotnet test --no-build
+      run: dotnet test --configuration Release --no-build
