@@ -30,6 +30,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestExtension1", "tests\Tes
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoStep.Extensions.Abstractions", "src\AutoStep.Extensions.Abstractions\AutoStep.Extensions.Abstractions.csproj", "{A3757BB6-6385-4218-B083-C9ECFF5C18E6}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestExtensionReferencesNewtonSoft", "tests\TestExtensionReferencesNewtonSoft\TestExtensionReferencesNewtonSoft.csproj", "{CE3B5F24-F713-406F-8E30-A524B3B9BBA0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -52,6 +54,10 @@ Global
 		{A3757BB6-6385-4218-B083-C9ECFF5C18E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A3757BB6-6385-4218-B083-C9ECFF5C18E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A3757BB6-6385-4218-B083-C9ECFF5C18E6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CE3B5F24-F713-406F-8E30-A524B3B9BBA0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CE3B5F24-F713-406F-8E30-A524B3B9BBA0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CE3B5F24-F713-406F-8E30-A524B3B9BBA0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CE3B5F24-F713-406F-8E30-A524B3B9BBA0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -61,6 +67,7 @@ Global
 		{FC524006-337C-4C34-A2CF-6F29EA0433C5} = {44A07BA8-D7D5-4BCB-B3B2-867704150F11}
 		{BD1E580A-5419-4F56-9A4F-94D69963CA79} = {44A07BA8-D7D5-4BCB-B3B2-867704150F11}
 		{A3757BB6-6385-4218-B083-C9ECFF5C18E6} = {5BC96213-76E7-4DE2-B253-ACB6154A4B00}
+		{CE3B5F24-F713-406F-8E30-A524B3B9BBA0} = {44A07BA8-D7D5-4BCB-B3B2-867704150F11}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {99035EAA-06A5-490D-9FEE-3EED01E71657}

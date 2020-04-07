@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoStep.Extensions.Tests.Utils;
+using AutoStep.Projects;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -57,7 +58,7 @@ namespace AutoStep.Extensions.Tests
             }
         }
 
-        private ExtensionTestContext GetExtensionTestContext(string testName, string jsonConfig)
+        private ExtensionTestContext GetExtensionTestContext(string testName, string jsonConfig, bool includeNuGet = false)
         {
             var assemblyDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
@@ -79,7 +80,15 @@ namespace AutoStep.Extensions.Tests
             var config = configuration.Build();
 
             var sourceData = new ExtensionSourceSettings(testRootDirectory);
-            sourceData.ReplaceCustomSources(new[] { nugetFileUri.AbsoluteUri });
+
+            if(includeNuGet)
+            {
+                sourceData.AppendCustomSources(new[] { nugetFileUri.AbsoluteUri });
+            }
+            else
+            {
+                sourceData.ReplaceCustomSources(new[] { nugetFileUri.AbsoluteUri });
+            }
 
             return new ExtensionTestContext
             {
@@ -112,6 +121,30 @@ namespace AutoStep.Extensions.Tests
                 set.LoadedPackages.First().PackageVersion.Should().Be("1.0.0");
 
                 File.Exists(set.GetPackagePath("TestExtension1", "lib", "netstandard2.1", "TestExtension1.dll")).Should().BeTrue();
+            }
+        }
+
+        [Fact]
+        public async Task ExtensionWithAnother()
+        {
+            using var context = GetExtensionTestContext(nameof(ExtensionWithAnother), @"
+            {
+                ""extensions"": [
+                    { ""Package"" : ""TestExtensionReferencesNewtonSoft"" }
+                ]
+            }", includeNuGet: true);
+
+            using (var set = await ExtensionSetLoader.LoadExtensionsAsync(
+                context.RootDirectory,
+                Assembly.GetExecutingAssembly(),
+                context.Sources,
+                LogFactory,
+                context.Configuration,
+                CancellationToken.None))
+            {
+                set.LoadedPackages.Should().Contain(p => p.PackageId == "Newtonsoft.Json");
+
+                set.AttachToProject(context.Configuration, new Project());
             }
         }
     }

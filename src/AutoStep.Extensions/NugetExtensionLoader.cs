@@ -210,7 +210,7 @@ namespace AutoStep.Extensions
                 var actualSourceDep = new SourcePackageDependencyInfo(
                     dependencyInfo.Id,
                     dependencyInfo.Version,
-                    dependencyInfo.Dependencies.Where(dep => hostDependencyContext.RuntimeLibraries.All(r => r.Name != dep.Id)),
+                    dependencyInfo.Dependencies.Where(dep => hostDependencyContext.RuntimeLibraries.All(r => !LibrarySuppliedByHost(r, dep))),
                     dependencyInfo.Listed,
                     dependencyInfo.Source);
 
@@ -225,6 +225,11 @@ namespace AutoStep.Extensions
 
                 break;
             }
+        }
+
+        private bool LibrarySuppliedByHost(RuntimeLibrary r, PackageDependency dep)
+        {
+            return r.Name == dep.Id && dep.VersionRange.Satisfies(NuGetVersion.Parse(r.Version));
         }
     }
 }
