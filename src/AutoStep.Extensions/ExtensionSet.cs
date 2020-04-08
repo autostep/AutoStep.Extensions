@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace AutoStep.Extensions
 {
-    internal class ExtensionSet : IExtensionSet
+    internal sealed class ExtensionSet : IExtensionSet
     {
         private readonly List<IExtensionEntryPoint> extensions = new List<IExtensionEntryPoint>();
         private readonly IReadOnlyList<string> requiredPackages;
@@ -123,23 +123,6 @@ namespace AutoStep.Extensions
             return extPackages.Packages.Any(p => p.PackageId == packageId);
         }
 
-        public void Dispose()
-        {
-            if (isDisposed)
-            {
-                throw new ObjectDisposedException(nameof(ExtensionSet));
-            }
-
-            foreach (var ext in extensions)
-            {
-                ext.Dispose();
-            }
-
-            loadContext.Unload();
-
-            isDisposed = true;
-        }
-
         private void ThrowIfRequestedExtensionPackage(PackageEntry package)
         {
             if (requiredPackages.Contains(package.PackageId))
@@ -201,6 +184,36 @@ namespace AutoStep.Extensions
 
                 return null;
             }
+        }
+
+        protected void Dispose(bool disposing)
+        {
+            if (!isDisposed)
+            {
+                if (disposing)
+                {
+                    foreach (var ext in extensions)
+                    {
+                        ext.Dispose();
+                    }
+                }
+
+                loadContext.Unload();
+
+                isDisposed = true;
+            }
+        }
+
+        ~ExtensionSet()
+        {
+            // Finalizer to make sure we can try to unload the assembly context.
+            Dispose(false);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
 }
