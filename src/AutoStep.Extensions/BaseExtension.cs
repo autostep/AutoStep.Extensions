@@ -16,7 +16,7 @@ namespace AutoStep.Extensions
         }
 
         public virtual void ExtendExecution(IConfiguration projectConfig, TestRun testRun)
-        {   
+        {
         }
 
         public virtual void Dispose()

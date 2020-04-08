@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
+using System.Threading;
 using AutoStep.Execution;
 using AutoStep.Execution.Dependency;
 using AutoStep.Projects;
@@ -17,7 +18,8 @@ namespace AutoStep.Extensions
         private readonly List<IExtensionEntryPoint> extensions = new List<IExtensionEntryPoint>();
         private readonly IReadOnlyList<string> requiredPackages;
 
-        private readonly ExtLoadContext loadContext;
+        private ExtLoadContext loadContext;
+        private readonly WeakReference weakContextReference;
         private readonly ExtensionPackages extPackages;
 
         private bool isDisposed;
@@ -25,6 +27,7 @@ namespace AutoStep.Extensions
         public ExtensionSet(IConfiguration projectConfig, ExtensionPackages packages)
         {
             loadContext = new ExtLoadContext(packages);
+            weakContextReference = new WeakReference(loadContext);
             isDisposed = false;
 
             // Get the set of required extensions.
@@ -155,12 +158,9 @@ namespace AutoStep.Extensions
             return true;
         }
 
-
         private class ExtLoadContext : AssemblyLoadContext
         {
             private readonly ExtensionPackages extFiles;
-
-            private List<WeakReference> assemblyWeakReferences = new List<WeakReference>();
 
             public ExtLoadContext(ExtensionPackages extFiles)
                 : base(true)
@@ -180,61 +180,53 @@ namespace AutoStep.Extensions
                     if (matchingFile is object)
                     {
                         // Got it.
-                        var assembly = LoadFromAssemblyPath(Path.GetFullPath(matchingFile, package.PackageFolder));
-
-                        assemblyWeakReferences.Add(new WeakReference(assembly, trackResurrection: true));
-
-                        return assembly;
+                        return LoadFromAssemblyPath(Path.GetFullPath(matchingFile, package.PackageFolder));
                     }
                 }
 
                 return null;
             }
-
-            public bool AnyWeakReferencesStillAlive()
-            {
-                return assemblyWeakReferences.Any(x => x.IsAlive);
-            }
         }
 
-        protected void Dispose(bool disposing)
+        public void Dispose()
         {
             if (!isDisposed)
             {
-                if (disposing)
-                {
-                    foreach (var ext in extensions)
-                    {
-                        ext.Dispose();
-                    }
-                }
+                UnloadAndWipe();
 
                 loadContext.Unload();
+                loadContext = null!;
 
                 var retryCount = 0;
 
                 // Give the GC time to unload the assembly.
-                while (loadContext.AnyWeakReferencesStillAlive() && retryCount < 10)
+                while (weakContextReference.IsAlive && retryCount < 10)
                 {
                     GC.Collect();
                     GC.WaitForPendingFinalizers();
                     retryCount++;
                 }
 
+                if (weakContextReference.IsAlive)
+                {
+                    throw new InvalidOperationException(
+                        "Cannot unload extensions; one or more assemblies are still active. " +
+                        "Check for running background tasks, and ensure they are stopped inside the extension's Dispose method.");
+                }
+
                 isDisposed = true;
             }
         }
 
-        ~ExtensionSet()
+        private void UnloadAndWipe()
         {
-            // Finalizer to make sure we can try to unload the assembly context.
-            Dispose(false);
-        }
+            foreach (var ext in extensions)
+            {
+                ext.Dispose();
+            }
 
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
+            // Empty the loaded extension list.
+            extensions.Clear();
         }
     }
 }
