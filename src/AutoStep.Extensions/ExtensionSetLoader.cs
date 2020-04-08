@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices.ComTypes;
 using System.Runtime.Versioning;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -37,34 +41,39 @@ namespace AutoStep.Extensions
 
             var extensionsFolder = Path.GetFullPath(Path.Combine(AutoStepHiddenDirectory, AutoStepExtensionDirectory), rootDirectory);
 
+            // Ensure that the extensions folder exists.
             var depFilePath = Path.Combine(extensionsFolder, ExtensionDependencyFile);
 
             ExtensionPackages? resolvedPackages = null;
 
-            if (File.Exists(depFilePath))
+            // Take a lock on the dependency file.
+            using (var dependencyFileLock = await TakePathLock(depFilePath, cancelToken))
             {
-                // Load the dependency context.
-                DependencyContext? cacheDepCtxt = LoadCachedDependencyInfo(depFilePath, logger);
-
-                if (cacheDepCtxt is object)
+                if (File.Exists(depFilePath))
                 {
-                    var cachedLoader = new CachedExtensionLoader(extensionsFolder, targetFramework, logger);
+                    // Load the dependency context.
+                    DependencyContext? cacheDepCtxt = LoadCachedDependencyInfo(depFilePath, logger);
 
-                    resolvedPackages = cachedLoader.ResolveExtensionPackages(projectConfig, cacheDepCtxt);
+                    if (cacheDepCtxt is object)
+                    {
+                        var cachedLoader = new CachedExtensionLoader(extensionsFolder, targetFramework, logger);
+
+                        resolvedPackages = cachedLoader.ResolveExtensionPackages(projectConfig, cacheDepCtxt);
+                    }
                 }
-            }
 
-            if (resolvedPackages is null)
-            {
-                // Need the dependency context for the host assembly.
-                var depContext = LoadHostDependencyContext(hostAssembly);
+                if (resolvedPackages is null)
+                {
+                    // Need the dependency context for the host assembly.
+                    var depContext = LoadHostDependencyContext(hostAssembly);
 
-                var nugetLoader = new NugetExtensionLoader(extensionsFolder, targetFramework, sourceSettings, depContext, logger);
+                    var nugetLoader = new NugetExtensionLoader(extensionsFolder, targetFramework, sourceSettings, depContext, logger);
 
-                resolvedPackages = await nugetLoader.ResolveExtensionPackagesAsync(projectConfig, cancelToken).ConfigureAwait(false);
+                    resolvedPackages = await nugetLoader.ResolveExtensionPackagesAsync(projectConfig, cancelToken).ConfigureAwait(false);
 
-                // Save the new set of packages.
-                SaveExtensionDependencyContext(projectConfig, depContext, resolvedPackages, depFilePath);
+                    // Save the new set of packages.
+                    SaveExtensionDependencyContext(projectConfig, depContext, resolvedPackages, depFilePath);
+                }
             }
 
             var loadedSet = new ExtensionSet(projectConfig, resolvedPackages);
@@ -72,6 +81,69 @@ namespace AutoStep.Extensions
             loadedSet.Load(logFactory);
 
             return loadedSet;
+        }
+
+        private static async ValueTask<IDisposable> TakePathLock(string depFilePath, CancellationToken cancelToken)
+        {
+            FileStream? fileStream = null;
+
+            // Hash the dependency file path and use that for the lock file.
+            // Doing this rather than taking a lock on the dependency file itself, because we
+            // want to allow a read-only dependency file.
+            var lockPath = Path.Combine(Path.GetTempPath(), HashPath(depFilePath));
+
+            while (fileStream is null)
+            {
+                try
+                {
+                    fileStream = File.Open(lockPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+
+                    cancelToken.ThrowIfCancellationRequested();
+                }
+                catch (IOException)
+                {
+                    cancelToken.ThrowIfCancellationRequested();
+
+                    // In use (or cannot use); go round again. Give it a few milliseconds.
+                    await Task.Delay(10).ConfigureAwait(false);
+                }
+            }
+
+            return fileStream;
+        }
+
+        private static string HashPath(string path)
+        {
+            const string pathPrefix = "aslock_";
+
+            // First, hash it (mostly to shorten).
+            using var hasher = SHA256.Create();
+
+            var hash = hasher.ComputeHash(Encoding.UTF8.GetBytes(path.ToUpperInvariant()));
+
+            // Just use hex encoding.
+            var createdString = string.Create(pathPrefix.Length + (hash.Length * 2), hash, (span, source) =>
+            {
+                var culture = CultureInfo.InvariantCulture;
+
+                // Copy the constant.
+                var prefixSpan = pathPrefix.AsSpan();
+
+                prefixSpan.CopyTo(span);
+                span = span.Slice(prefixSpan.Length);
+
+                for (int idx = 0; idx < source.Length; idx++)
+                {
+                    var hex = source[idx].ToString("x2", culture);
+                    span[0] = hex[0];
+                    span[1] = hex[1];
+
+                    // Move forward in the span.
+                    span = span.Slice(2);
+                }
+            });
+
+            return createdString;
         }
 
         private static DependencyContext? LoadCachedDependencyInfo(string depFilePath, ILogger logger)
@@ -83,7 +155,7 @@ namespace AutoStep.Extensions
 
                 return dependencyContextLdr.Read(stream);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 // Corrupt file, IO error? Lets just assume we can't get the info.
                 logger.LogWarning(ex, "Corrupt or unavailable extension cache file. Ignoring cache.");
