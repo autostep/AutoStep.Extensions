@@ -160,6 +160,8 @@ namespace AutoStep.Extensions
         {
             private readonly ExtensionPackages extFiles;
 
+            private List<WeakReference> assemblyWeakReferences = new List<WeakReference>();
+
             public ExtLoadContext(ExtensionPackages extFiles)
                 : base(true)
             {
@@ -178,11 +180,20 @@ namespace AutoStep.Extensions
                     if (matchingFile is object)
                     {
                         // Got it.
-                        return LoadFromAssemblyPath(Path.GetFullPath(matchingFile, package.PackageFolder));
+                        var assembly = LoadFromAssemblyPath(Path.GetFullPath(matchingFile, package.PackageFolder));
+
+                        assemblyWeakReferences.Add(new WeakReference(assembly, trackResurrection: true));
+
+                        return assembly;
                     }
                 }
 
                 return null;
+            }
+
+            public bool AnyWeakReferencesStillAlive()
+            {
+                return assemblyWeakReferences.Any(x => x.IsAlive);
             }
         }
 
@@ -199,6 +210,16 @@ namespace AutoStep.Extensions
                 }
 
                 loadContext.Unload();
+
+                var retryCount = 0;
+
+                // Give the GC time to unload the assembly.
+                while (loadContext.AnyWeakReferencesStillAlive() && retryCount < 10)
+                {
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                    retryCount++;
+                }
 
                 isDisposed = true;
             }
