@@ -40,6 +40,8 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <!-- Need a reference to netstandard in case plugin libraries use it -->
+    <PackageReference Include="NETStandard.Library" Version="2.0.3" />
   </ItemGroup>
   
   <ItemGroup>
