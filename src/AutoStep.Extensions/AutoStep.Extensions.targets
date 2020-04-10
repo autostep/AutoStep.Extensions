@@ -1,5 +1,7 @@
 ﻿<Project>
   <ItemGroup>
+    
+    
       <ExtDepsJson Include="$(MSBuildThisFileDirectory)\..\..\lib\netcoreapp3.1\AutoStep.Extensions.deps.json" />
   </ItemGroup>
   <Target Name="__CopyExtensionDepsJson" BeforeTargets="Build">
@@ -7,10 +9,10 @@
   </Target>
 
   <!-- Ensure that the referencing project copies the deps json to the publish dir. -->
-  <Target Name="__PublishDepsJsonFiles" DependsOnTargets="ComputeFilesToPublish">
+  <Target Name="__PublishDepsJsonFiles" AfterTargets="ComputeFilesToPublish">
     <ItemGroup>
-      <DepsJsonFile Include="$(TargetDir)AutoStep.Extensions.deps.json" />
-      <ResolvedFileToPublish Include="@(DepsJsonFile)" Exclude="@(ResolvedFileToPublish)">
+      <PublishDepsJsonFile Include="$(TargetDir)AutoStep.Extensions.deps.json" />
+      <ResolvedFileToPublish Include="@(PublishDepsJsonFile)">
         <RelativePath>AutoStep.Extensions.deps.json</RelativePath>
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       </ResolvedFileToPublish>
