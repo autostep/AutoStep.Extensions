@@ -74,6 +74,7 @@ namespace AutoStep.Extensions
             {
                 return sourceList;
             }
+
             public void AddPackageSource(PackageSource source)
             {
                 throw new NotImplementedException();

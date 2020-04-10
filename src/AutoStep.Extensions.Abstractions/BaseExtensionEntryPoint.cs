@@ -2,11 +2,23 @@
 using AutoStep.Execution.Dependency;
 using AutoStep.Projects;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace AutoStep.Extensions
 {
-    public abstract class BaseExtension : IExtensionEntryPoint
+    /// <summary>
+    /// Simple base class for extensions that can be derived from so the actual entry point doesn't have to implement
+    /// all the methods.
+    /// </summary>
+    public abstract class BaseExtensionEntryPoint : IExtensionEntryPoint
     {
+        protected ILoggerFactory LoggerFactory { get; }
+
+        protected BaseExtensionEntryPoint(ILoggerFactory logFactory)
+        {
+            LoggerFactory = logFactory;
+        }
+
         public virtual void AttachToProject(IConfiguration projectConfig, Project project)
         {
         }
