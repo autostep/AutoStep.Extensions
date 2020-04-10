@@ -5,4 +5,17 @@
   <Target Name="__CopyExtensionDepsJson" BeforeTargets="Build">
       <Copy SourceFiles="@(ExtDepsJson)" DestinationFolder="$(TargetDir)" />
   </Target>
+
+  <!-- Ensure that the referencing project copies the deps json to the publish dir. -->
+  <Target Name="PublishDepsJsonFiles" AfterTargets="ComputeFilesToPublish">
+    <ItemGroup>
+      <DepsJsonFile Include="$(TargetDir)AutoStep.Extensions.deps.json" />
+      <ResolvedFileToPublish Include="@(DepsJsonFile)" Exclude="@(ResolvedFileToPublish)">
+        <RelativePath>AutoStep.Extensions.deps.json</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+    </ItemGroup>
+  </Target>
+
+
 </Project>

@@ -1,4 +1,5 @@
-﻿using AutoStep.Execution;
+﻿using System;
+using AutoStep.Execution;
 using AutoStep.Execution.Dependency;
 using AutoStep.Projects;
 using Microsoft.Extensions.Configuration;
@@ -12,6 +13,8 @@ namespace AutoStep.Extensions
     /// </summary>
     public abstract class BaseExtensionEntryPoint : IExtensionEntryPoint
     {
+        private bool isDisposed = false;
+
         protected ILoggerFactory LoggerFactory { get; }
 
         protected BaseExtensionEntryPoint(ILoggerFactory logFactory)
@@ -31,8 +34,33 @@ namespace AutoStep.Extensions
         {
         }
 
-        public virtual void Dispose()
+        protected virtual void Dispose(bool disposing)
         {
+        }
+
+        /// <inheritdoc/>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+            "Design",
+            "CA1063:Implement IDisposable Correctly", 
+            Justification = "It is correct, just a slight variant to make it easier on implementations.")]
+        public void Dispose()
+        {
+            if (!isDisposed)
+            {
+                Dispose(true);
+
+                isDisposed = true;
+            }
+
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Finalizes an instance of the <see cref="BaseExtensionEntryPoint"/> class.
+        /// </summary>
+        ~BaseExtensionEntryPoint()
+        {
+            Dispose(false);
         }
     }
 }

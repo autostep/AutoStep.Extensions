@@ -27,7 +27,7 @@
   
   <!-- Copy deps.json from the original project. -->
   <ItemGroup>
-    <ExtDepsJson Include="..\..\src\AutoStep.Extensions\bin\$(Configuration)\netcoreapp3.1\AutoStep.Extensions.deps.json" />
+    <ExtDepsJson Include="..\..\src\AutoStep.Extensions\bin\$(Configuration)\$(TargetFramework)\AutoStep.Extensions.deps.json" />
   </ItemGroup>
   <Target Name="__CopyExtensionDepsJson" BeforeTargets="Build">
     <Copy SourceFiles="@(ExtDepsJson)" DestinationFolder="$(TargetDir)" />
