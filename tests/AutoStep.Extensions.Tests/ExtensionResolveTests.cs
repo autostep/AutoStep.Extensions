@@ -29,7 +29,6 @@ namespace AutoStep.Extensions.Tests
 
             using (var set = await ExtensionSetLoader.LoadExtensionsAsync(
                 context.RootDirectory,
-                Assembly.GetExecutingAssembly(),
                 context.Sources,
                 LogFactory,
                 context.Configuration,
@@ -55,7 +54,6 @@ namespace AutoStep.Extensions.Tests
 
             using (var set = await ExtensionSetLoader.LoadExtensionsAsync(
                 context.RootDirectory,
-                Assembly.GetExecutingAssembly(),
                 context.Sources,
                 LogFactory,
                 context.Configuration,

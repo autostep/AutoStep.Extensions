@@ -26,12 +26,13 @@ namespace AutoStep.Extensions
 
         public static async Task<IExtensionSet> LoadExtensionsAsync(
             string rootDirectory,
-            Assembly hostAssembly,
             ExtensionSourceSettings sourceSettings,
             ILoggerFactory logFactory,
             IConfiguration projectConfig,
             CancellationToken cancelToken)
         {
+            var hostAssembly = typeof(ExtensionSetLoader).Assembly;
+
             var targetFramework = hostAssembly.GetCustomAttribute<TargetFrameworkAttribute>()?.FrameworkName ?? DefaultFramework;
 
             var logger = logFactory.CreateLogger("extensions");
