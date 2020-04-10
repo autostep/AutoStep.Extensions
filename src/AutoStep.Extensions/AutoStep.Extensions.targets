@@ -7,7 +7,7 @@
   </Target>
 
   <!-- Ensure that the referencing project copies the deps json to the publish dir. -->
-  <Target Name="PublishDepsJsonFiles" AfterTargets="ComputeFilesToPublish">
+  <Target Name="PublishDepsJsonFiles" DependsOnTargets="ComputeFilesToPublish">
     <ItemGroup>
       <DepsJsonFile Include="$(TargetDir)AutoStep.Extensions.deps.json" />
       <ResolvedFileToPublish Include="@(DepsJsonFile)" Exclude="@(ResolvedFileToPublish)">

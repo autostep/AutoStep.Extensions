@@ -34,6 +34,10 @@ namespace AutoStep.Extensions
         {
         }
 
+        /// <summary>
+        /// Disposes of the extension (and any resources it has allocated).
+        /// </summary>
+        /// <param name="disposing"></param>
         protected virtual void Dispose(bool disposing)
         {
         }
