@@ -48,6 +48,10 @@
     <ProjectReference Include="..\AutoStep.Extensions.Abstractions\AutoStep.Extensions.Abstractions.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="AutoStep.Extensions.targets" PackagePath="build/netcoreapp3.1/AutoStep.Extensions.targets" />
+  </ItemGroup>
+
   <PropertyGroup>
       <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);IncludeDepsJson</TargetsForTfmSpecificBuildOutput>
   </PropertyGroup>
@@ -56,6 +60,6 @@
     <ItemGroup>
       <BuildOutputInPackage Include="$(OutputPath)$(AssemblyName).deps.json" />
     </ItemGroup>
-  </Target>
+  </Target>  
 
 </Project>

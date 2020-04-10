@@ -1,0 +1,8 @@
+﻿<Project>
+  <ItemGroup>
+      <ExtDepsJson Include="$(MSBuildThisFileDirectory)\..\..\lib\netcoreapp3.1\AutoStep.Extensions.deps.json" />
+  </ItemGroup>
+  <Target Name="__CopyExtensionDepsJson" BeforeTargets="Build">
+      <Copy SourceFiles="@(ExtDepsJson)" DestinationFolder="$(TargetDir)" />
+  </Target>
+</Project>
