@@ -1,14 +1,14 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyModel;
-using NuGet.Frameworks;
-using NuGet.Packaging;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Versioning;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyModel;
+using NuGet.Frameworks;
+using NuGet.Packaging;
 
 namespace AutoStep.Extensions
 {

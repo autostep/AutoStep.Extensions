@@ -15,21 +15,31 @@ namespace AutoStep.Extensions
     {
         private bool isDisposed = false;
 
+        /// <summary>
+        /// Gets the logger factory injected into the entry point at construction.
+        /// </summary>
         protected ILoggerFactory LoggerFactory { get; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BaseExtensionEntryPoint"/> class.
+        /// </summary>
+        /// <param name="logFactory">The logger factory.</param>
         protected BaseExtensionEntryPoint(ILoggerFactory logFactory)
         {
             LoggerFactory = logFactory;
         }
 
+        /// <inheritdoc/>
         public virtual void AttachToProject(IConfiguration projectConfig, Project project)
         {
         }
 
+        /// <inheritdoc/>
         public virtual void ConfigureExecutionServices(IConfiguration runConfiguration, IServicesBuilder servicesBuilder)
         {
         }
 
+        /// <inheritdoc/>
         public virtual void ExtendExecution(IConfiguration projectConfig, TestRun testRun)
         {
         }
@@ -37,7 +47,7 @@ namespace AutoStep.Extensions
         /// <summary>
         /// Disposes of the extension (and any resources it has allocated).
         /// </summary>
-        /// <param name="disposing"></param>
+        /// <param name="disposing">True to unload managed resources. False to unload only unmanaged resources.</param>
         protected virtual void Dispose(bool disposing)
         {
         }

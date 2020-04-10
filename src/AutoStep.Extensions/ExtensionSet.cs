@@ -199,19 +199,15 @@ namespace AutoStep.Extensions
 
                 var retryCount = 0;
 
-                // Give the GC time to unload the assembly.
+                // Give the GC time to try and unload.
+                // It is possible that during test execution (as opposed to compilation),
+                // types will be loaded that cannot be unloaded. That's ok though, the important thing is that the language service
+                // can dynamically unload the 'limited' foot-print in the context of the loaded steps.
                 while (weakContextReference.IsAlive && retryCount < 10)
                 {
                     GC.Collect();
                     GC.WaitForPendingFinalizers();
                     retryCount++;
-                }
-
-                if (weakContextReference.IsAlive)
-                {
-                    throw new InvalidOperationException(
-                        "Cannot unload extensions; one or more assemblies are still active. " +
-                        "Check for running background tasks, and ensure they are stopped inside the extension's Dispose method.");
                 }
 
                 isDisposed = true;
