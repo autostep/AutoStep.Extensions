@@ -48,4 +48,14 @@
     <ProjectReference Include="..\AutoStep.Extensions.Abstractions\AutoStep.Extensions.Abstractions.csproj" />
   </ItemGroup>
 
+  <PropertyGroup>
+      <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);IncludeDepsJson</TargetsForTfmSpecificBuildOutput>
+  </PropertyGroup>
+
+  <Target Name="IncludeDepsJson">
+    <ItemGroup>
+      <BuildOutputInPackage Include="$(OutputPath)$(AssemblyName).deps.json" />
+    </ItemGroup>
+  </Target>
+
 </Project>
