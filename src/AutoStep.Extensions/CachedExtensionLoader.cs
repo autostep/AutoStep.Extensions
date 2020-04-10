@@ -1,16 +1,13 @@
-﻿using AutoStep.Projects.Configuration;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.Logging;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace AutoStep.Extensions
 {
@@ -55,7 +52,7 @@ namespace AutoStep.Extensions
             {
                 logger.LogDebug("Set of root packages not valid; ignoring cache.");
             }
-            
+
             return resolvedPackages;
         }
 
@@ -113,7 +110,7 @@ namespace AutoStep.Extensions
         /// Look for all runtime libraries that are declared as 'rootPackage' type.
         /// If the set of root packages have changed from the list of extensions, we can throw away
         /// the cache and retrieve again.
-        /// 
+        ///
         /// If an explicit version is set in the extensions config, and that version is no longer met by
         /// the version in the cache, then we will also go again.
         /// </summary>
