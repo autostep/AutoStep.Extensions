@@ -43,9 +43,9 @@ namespace AutoStep.Extensions.Tests
         }
 
         [Fact]
-        public async Task ExtensionWithAnother()
+        public async Task ExtensionWithAnotherPackage()
         {
-            using var context = GetExtensionTestContext(nameof(ExtensionWithAnother), @"
+            using var context = GetExtensionTestContext(nameof(ExtensionWithAnotherPackage), @"
             {
                 ""extensions"": [
                     { ""Package"" : ""TestExtensionReferencesNewtonSoft"" }
