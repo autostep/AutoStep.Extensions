@@ -131,8 +131,13 @@ namespace AutoStep.Extensions
 
                 var libItems = GetFrameworkFiles(await packageReader.GetLibItemsAsync(cancelToken));
 
-                // Define the entry point (DLL with the same name as the package).
-                var entryPoint = libItems.FirstOrDefault(f => Path.GetFileName(f) == package.Id + ".dll");
+                string? entryPoint = null;
+
+                // Only consider as an entry point if the package contains the autostep tag.
+                if (packageReader.NuspecReader.GetTags().Contains("autostep", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    entryPoint = libItems.FirstOrDefault(f => Path.GetFileName(f) == package.Id + ".dll");
+                }
 
                 var packageEntry = new PackageEntryWithDependencyInfo(
                     package,

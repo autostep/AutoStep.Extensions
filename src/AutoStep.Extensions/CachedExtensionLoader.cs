@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using Microsoft.Extensions.Configuration;
@@ -90,7 +91,13 @@ namespace AutoStep.Extensions
                         }
                     }
 
-                    var entryPoint = libFiles.FirstOrDefault(f => Path.GetFileName(f) == runtimeLib.Name + ".dll");
+                    string? entryPoint = null;
+
+                    // Only consider as an entry point if the package contains the autostep tag.
+                    if (nugetFolderReader.NuspecReader.GetTags().Contains("autostep", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        entryPoint = libFiles.FirstOrDefault(f => Path.GetFileName(f) == runtimeLib.Name + ".dll");
+                    }
 
                     loadedPackages.Add(new PackageEntry(runtimeLib.Name, runtimeLib.Version, packageDir, entryPoint,
                                                         libFiles, contentFiles, runtimeLib.Dependencies.Select(d => new PackageDependency(d.Name))));

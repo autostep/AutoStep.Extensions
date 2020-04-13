@@ -9,7 +9,7 @@ namespace AutoStep.Extensions
         public PackageEntryWithDependencyInfo(
             SourcePackageDependencyInfo packageDepInfo,
             string packageFolder,
-            string entryPoint,
+            string? entryPoint,
             IEnumerable<string> libFiles,
             IEnumerable<string> contentFiles)
             : base(packageDepInfo.Id, packageDepInfo.Version.ToNormalizedString(), packageFolder, entryPoint, libFiles, contentFiles, packageDepInfo.Dependencies)
