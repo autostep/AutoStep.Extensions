@@ -166,13 +166,6 @@ namespace AutoStep.Extensions
                 : base(true)
             {
                 this.extFiles = extFiles;
-
-                this.Resolving += ExtLoadContext_Resolving;
-            }
-
-            private Assembly? ExtLoadContext_Resolving(AssemblyLoadContext arg1, AssemblyName arg2)
-            {
-                return Load(arg2);
             }
 
             protected override Assembly Load(AssemblyName assemblyName)

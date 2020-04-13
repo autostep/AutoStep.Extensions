@@ -59,6 +59,7 @@ namespace AutoStep.Extensions.Tests
                 context.Configuration,
                 CancellationToken.None))
             {
+                set.LoadedPackages.Should().HaveCount(2);
                 set.LoadedPackages.Should().Contain(p => p.PackageId == "Newtonsoft.Json");
 
                 set.AttachToProject(context.Configuration, new Project());

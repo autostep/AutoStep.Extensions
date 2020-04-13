@@ -17,7 +17,7 @@
     <PackageTags>testing, gherkin</PackageTags>
     <PackageIcon>nuget-icon.png</PackageIcon>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>    
   </PropertyGroup>
   
   <ItemGroup>
@@ -60,6 +60,6 @@
     <ItemGroup>
       <BuildOutputInPackage Include="$(OutputPath)$(AssemblyName).deps.json" />
     </ItemGroup>
-  </Target>  
+  </Target>
 
 </Project>

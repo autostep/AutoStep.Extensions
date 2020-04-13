@@ -13,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.Loader;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -28,8 +29,6 @@ namespace AutoStep.Extensions
         private readonly string packageDirectory;
         private readonly ExtensionSourceSettings sourceSettings;
         private readonly DependencyContext hostDependencyContext;
-
-        private readonly PackageSource NuGetSource = new PackageSource("https://api.nuget.org/v3/index.json", "nuget");
 
         public NugetExtensionLoader(string extensionsFolder, string frameworkName, ExtensionSourceSettings sourceSettings, DependencyContext hostDependencyContext, ILogger logger)
             : base(frameworkName)
@@ -212,10 +211,11 @@ namespace AutoStep.Extensions
                 if (dependencyInfo == null) continue;
 
                 // Filter the dependency info.
+                // Don't duplicate any 'system' packages.
                 var actualSourceDep = new SourcePackageDependencyInfo(
                     dependencyInfo.Id,
                     dependencyInfo.Version,
-                    dependencyInfo.Dependencies.Where(dep => hostDependencyContext.RuntimeLibraries.All(r => !LibrarySuppliedByHost(r, dep))),
+                    dependencyInfo.Dependencies.Where(dep => !DependencyPresentInRuntime(dep) && hostDependencyContext.RuntimeLibraries.All(r => !LibrarySuppliedByHost(r, dep))),
                     dependencyInfo.Listed,
                     dependencyInfo.Source);
 
@@ -230,6 +230,11 @@ namespace AutoStep.Extensions
 
                 break;
             }
+        }
+
+        private bool DependencyPresentInRuntime(PackageDependency dep)
+        {
+            return FrameworkPackages.IsPackageProvidedByFramework(dep.Id);
         }
 
         private bool LibrarySuppliedByHost(RuntimeLibrary r, PackageDependency dep)
