@@ -215,7 +215,7 @@ namespace AutoStep.Extensions
                 var actualSourceDep = new SourcePackageDependencyInfo(
                     dependencyInfo.Id,
                     dependencyInfo.Version,
-                    dependencyInfo.Dependencies.Where(dep => !DependencyPresentInRuntime(dep) && hostDependencyContext.RuntimeLibraries.All(r => !LibrarySuppliedByHost(r, dep))),
+                    dependencyInfo.Dependencies.Where(dep => !DependencyPresentInRuntime(dep) && !LibrarySuppliedByHost(hostDependencyContext.RuntimeLibraries, dep)),
                     dependencyInfo.Listed,
                     dependencyInfo.Source);
 
@@ -232,14 +232,31 @@ namespace AutoStep.Extensions
             }
         }
 
+        private bool LibrarySuppliedByHost(IReadOnlyList<RuntimeLibrary> runtimeLibraries, PackageDependency dep)
+        {
+            var runtimeLib = runtimeLibraries.FirstOrDefault(r => r.Name == dep.Id);
+
+            if (runtimeLib is object)
+            {
+                var parsedLibVersion = NuGetVersion.Parse(runtimeLib.Version);
+
+                if (parsedLibVersion.IsPrerelease)
+                {
+                    // Always use pre-releases.
+                    return true;
+                }
+                else
+                {
+                    return dep.VersionRange.Satisfies(parsedLibVersion);
+                }
+            }
+
+            return false;
+        }
+
         private bool DependencyPresentInRuntime(PackageDependency dep)
         {
             return FrameworkPackages.IsPackageProvidedByFramework(dep.Id);
-        }
-
-        private bool LibrarySuppliedByHost(RuntimeLibrary r, PackageDependency dep)
-        {
-            return r.Name == dep.Id && dep.VersionRange.Satisfies(NuGetVersion.Parse(r.Version));
         }
     }
 }
