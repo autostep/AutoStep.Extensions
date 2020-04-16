@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -80,7 +81,7 @@ namespace AutoStep.Extensions
 
                 if (packageIdentity is null)
                 {
-                    throw new ExtensionLoadException($"Could not locate extension package {package.Package}");
+                    throw new ExtensionLoadException(string.Format(CultureInfo.CurrentCulture, Messages.NuGetPackagesLoader_ExtensionNotFound, package.Package));
                 }
 
                 // Configured extensions make up our 'target' packages.
@@ -210,7 +211,7 @@ namespace AutoStep.Extensions
                 {
                     if (!VersionRange.TryParse(extConfig.Version, out var range))
                     {
-                        throw new ProjectConfigurationException($"Invalid extension version range specified for the {extConfig.Package} extension.");
+                        throw new ExtensionLoadException(string.Format(CultureInfo.CurrentCulture, Messages.NuGetPackagesLoader_BadVersionRange, extConfig.Package));
                     }
 
                     // Find the best package version match for the range.

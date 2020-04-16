@@ -177,4 +177,10 @@
   <data name="LoadedExtensions_PackageNotLoaded" xml:space="preserve">
     <value>The specified package has not been loaded. Is it referenced by your extension?</value>
   </data>
+  <data name="NuGetPackagesLoader_BadVersionRange" xml:space="preserve">
+    <value>Invalid extension version range specified in the configuration for the {0} extension.</value>
+  </data>
+  <data name="NuGetPackagesLoader_ExtensionNotFound" xml:space="preserve">
+    <value>Could not locate extension package {0}.</value>
+  </data>
 </root>

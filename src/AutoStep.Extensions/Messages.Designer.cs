@@ -239,5 +239,23 @@ namespace AutoStep.Extensions {
                 return ResourceManager.GetString("LoadedExtensions_PackageNotLoaded", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid extension version range specified in the configuration for the {0} extension..
+        /// </summary>
+        internal static string NuGetPackagesLoader_BadVersionRange {
+            get {
+                return ResourceManager.GetString("NuGetPackagesLoader_BadVersionRange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not locate extension package {0}..
+        /// </summary>
+        internal static string NuGetPackagesLoader_ExtensionNotFound {
+            get {
+                return ResourceManager.GetString("NuGetPackagesLoader_ExtensionNotFound", resourceCulture);
+            }
+        }
     }
 }
