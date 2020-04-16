@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Diagnostics;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Text;
@@ -21,20 +21,31 @@ namespace AutoStep.Extensions.Tests
 
         protected class ExtensionTestContext : IDisposable
         {
-            public string RootDirectory { get; set; }
+            public ExtensionTestContext(string rootDirectory, IConfiguration configuration, ISourceSettings sources, IEnumerable<ExtensionConfiguration> extensions)
+            {
+                RootDirectory = rootDirectory;
+                Configuration = configuration;
+                Sources = sources;
+                Extensions = extensions;
+            }
 
-            public IConfiguration Configuration { get; set; }
-            public ExtensionSourceSettings Sources { get; internal set; }
+            public string RootDirectory { get; }
+
+            public IConfiguration Configuration { get; }
+
+            public ISourceSettings Sources { get;  }
+
+            public IEnumerable<ExtensionConfiguration> Extensions { get; }
 
             public void Dispose()
             {
-                // Don't clean up if the debugger is attached. Want to be able to look at the output.
-                if (Directory.Exists(RootDirectory) && !Debugger.IsAttached)
+                if (Directory.Exists(RootDirectory))
                 {
-                    Directory.Delete(RootDirectory, true);                    
+                    Directory.Delete(RootDirectory, true);
                 }
             }
         }
+
         protected ExtensionTestContext GetExtensionTestContext(string testName, string jsonConfig, bool includeNuGet = false)
         {
             var assemblyDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
@@ -42,11 +53,11 @@ namespace AutoStep.Extensions.Tests
             // test-packages artifact path.
             var relativePath = "../../../../../artifacts/testpackages";
 
-            var fullPath = Path.GetFullPath(relativePath, assemblyDirectory);
+            var fullPath = Path.GetFullPath(relativePath, assemblyDirectory!);
 
             var nugetFileUri = new Uri("file://" + fullPath);
 
-            var testRootDirectory = Path.Combine(assemblyDirectory, "testdirs", nameof(ExtensionResolveTests), testName);
+            var testRootDirectory = Path.Combine(assemblyDirectory!, "testdirs", nameof(ExtensionResolveTests), testName);
 
             var configuration = new ConfigurationBuilder();
 
@@ -56,7 +67,7 @@ namespace AutoStep.Extensions.Tests
 
             var config = configuration.Build();
 
-            var sourceData = new ExtensionSourceSettings(testRootDirectory);
+            var sourceData = new SourceSettings(testRootDirectory);
 
             if (includeNuGet)
             {
@@ -67,12 +78,9 @@ namespace AutoStep.Extensions.Tests
                 sourceData.ReplaceCustomSources(new[] { nugetFileUri.AbsoluteUri });
             }
 
-            return new ExtensionTestContext
-            {
-                RootDirectory = testRootDirectory,
-                Configuration = config,
-                Sources = sourceData
-            };
+            var extensions = config.GetSection("extensions").Get<ExtensionConfiguration[]>();
+
+            return new ExtensionTestContext(testRootDirectory, config, sourceData, extensions);
         }
 
     }

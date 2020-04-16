@@ -1,45 +1,53 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.Versioning;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyModel;
-using Microsoft.Extensions.Logging;
 using NuGet.Configuration;
 
 namespace AutoStep.Extensions
 {
-    public class ExtensionSourceSettings
+    /// <summary>
+    /// Provides an <see cref="ISourceSettings"/> implementation that allows a custom package source list to
+    /// be defined (potentially ignoring system configuration).
+    /// </summary>
+    public class SourceSettings : ISourceSettings
     {
-        internal ISettings NuGetSettings { get; private set; }
+        /// <inheritdoc/>
+        public ISettings NuGetSettings { get; private set; }
 
-        internal IPackageSourceProvider SourceProvider { get; private set; }
+        /// <inheritdoc/>
+        public IPackageSourceProvider SourceProvider { get; private set; }
 
-        public string RootDir { get; }
-
-        public ExtensionSourceSettings(string rootDir)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SourceSettings"/> class.
+        /// </summary>
+        /// <param name="rootDir">The root directory in which to look for nuget settings.</param>
+        public SourceSettings(string rootDir)
         {
             NuGetSettings = Settings.LoadDefaultSettings(rootDir);
             SourceProvider = new PackageSourceProvider(NuGetSettings);
-            RootDir = rootDir;
         }
 
-        public void AppendCustomSources(string[] sources)
+        /// <summary>
+        /// Append a custom set of package sources to the available configured defaults.
+        /// </summary>
+        /// <param name="sourceUrls">The set of custom sources.</param>
+        public void AppendCustomSources(string[] sourceUrls)
         {
-            SourceProvider = new CustomPackageSourceProvider(SourceProvider.LoadPackageSources().Concat(sources.Select(x => new PackageSource(x))));
+            SourceProvider = new CustomPackageSourceProvider(SourceProvider.LoadPackageSources().Concat(sourceUrls.Select(x => new PackageSource(x))));
         }
 
-        public void ReplaceCustomSources(string[] sources)
+        /// <summary>
+        /// Replace the set of default sources with a new set.
+        /// </summary>
+        /// <param name="sourceUrls">The set of source urls.</param>
+        public void ReplaceCustomSources(string[] sourceUrls)
         {
-            SourceProvider = new CustomPackageSourceProvider(sources.Select(x => new PackageSource(x)));
+            SourceProvider = new CustomPackageSourceProvider(sourceUrls.Select(x => new PackageSource(x)));
         }
 
+        /// <summary>
+        /// Custom source to control the set of package sources.
+        /// </summary>
         private class CustomPackageSourceProvider : IPackageSourceProvider
         {
             private List<PackageSource> sourceList;
@@ -48,7 +56,9 @@ namespace AutoStep.Extensions
 
             public string DefaultPushSource => throw new NotImplementedException();
 
-            public event EventHandler PackageSourcesChanged;
+            #pragma warning disable CS0067 // Not raising it, but required by the interface.
+            public event EventHandler? PackageSourcesChanged;
+            #pragma warning restore CS0067
 
             public CustomPackageSourceProvider(IEnumerable<PackageSource> sources)
             {

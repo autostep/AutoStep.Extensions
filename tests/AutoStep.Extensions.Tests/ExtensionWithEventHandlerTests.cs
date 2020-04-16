@@ -8,6 +8,7 @@ using AutoStep.Elements.Test;
 using AutoStep.Execution;
 using AutoStep.Execution.Contexts;
 using AutoStep.Execution.Events;
+using AutoStep.Extensions.Abstractions;
 using AutoStep.Language;
 using AutoStep.Language.Test;
 using AutoStep.Projects;
@@ -33,11 +34,12 @@ namespace AutoStep.Extensions.Tests
                 ]
             }");
 
-            using (var set = await ExtensionSetLoader.LoadExtensionsAsync(
-                context.RootDirectory,
+            var setLoader = new ExtensionSetLoader(context.RootDirectory, LogFactory, "autostep");
+
+            using (var set = await setLoader.LoadExtensionsAsync<IExtensionEntryPoint>(
                 context.Sources,
-                LogFactory,
-                context.Configuration,
+                context.Extensions,
+                false,
                 CancellationToken.None))
             {
                 var file = new ProjectTestFile("/test", new StringContentSource(""));
@@ -63,13 +65,16 @@ namespace AutoStep.Extensions.Tests
             }
         }
 
-        private async Task DoExecuteTest(IExtensionSet extensions, ExtensionTestContext context, ProjectTestFile file)
+        private async Task DoExecuteTest(ILoadedExtensions<IExtensionEntryPoint> extensions, ExtensionTestContext context, ProjectTestFile file)
         {
             var proj = new Project();
 
             proj.TryAddFile(file);
 
-            extensions.AttachToProject(context.Configuration, proj);
+            foreach (var entryPoint in extensions.ExtensionEntryPoints)
+            {
+                entryPoint.AttachToProject(context.Configuration, proj);
+            }
 
             var testRun = proj.CreateTestRun();
 
@@ -77,7 +82,10 @@ namespace AutoStep.Extensions.Tests
 
             testRun.Events.Add(myHandler);
 
-            extensions.ExtendExecution(context.Configuration, testRun);
+            foreach (var entryPoint in extensions.ExtensionEntryPoints)
+            {
+                entryPoint.ExtendExecution(context.Configuration, testRun);
+            }
 
             await testRun.ExecuteAsync();
 
@@ -86,7 +94,7 @@ namespace AutoStep.Extensions.Tests
 
         private class LocalCollectionHandler : BaseEventHandler
         {
-            public Exception Error { get; set; }
+            public Exception? Error { get; set; }
 
             public override async ValueTask OnExecute(IServiceProvider scope, RunContext ctxt, Func<IServiceProvider, RunContext, ValueTask> nextHandler)
             {

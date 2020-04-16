@@ -1,10 +1,15 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using AutoStep.Extensions.Abstractions;
 using AutoStep.Projects;
 using FluentAssertions;
+using Microsoft.Extensions.Configuration;
+using Moq;
+using NuGet.Packaging.Signing;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -18,20 +23,21 @@ namespace AutoStep.Extensions.Tests
         }
                 
         [Fact]
-        public async Task FullEndToEnd()
+        public async Task SimplePackageLoad()
         {
-            using var context = GetExtensionTestContext(nameof(FullEndToEnd), @"
+            using var context = GetExtensionTestContext(nameof(SimplePackageLoad), @"
             {
                 ""extensions"": [
                     { ""Package"" : ""TestExtension1"" }
                 ]
             }");
 
-            using (var set = await ExtensionSetLoader.LoadExtensionsAsync(
-                context.RootDirectory,
+            var setLoader = new ExtensionSetLoader(context.RootDirectory, LogFactory, "autostep");
+
+            using (var set = await setLoader.LoadExtensionsAsync<IExtensionEntryPoint>(
                 context.Sources,
-                LogFactory,
-                context.Configuration,
+                context.Extensions,
+                false,
                 CancellationToken.None))
             {
                 set.LoadedPackages.Should().HaveCount(1);
@@ -43,26 +49,78 @@ namespace AutoStep.Extensions.Tests
         }
 
         [Fact]
-        public async Task ExtensionWithAnotherPackage()
+        public async Task ExtensionWithDependency()
         {
-            using var context = GetExtensionTestContext(nameof(ExtensionWithAnotherPackage), @"
+            using var context = GetExtensionTestContext(nameof(ExtensionWithDependency), @"
             {
                 ""extensions"": [
                     { ""Package"" : ""TestExtensionReferencesNewtonSoft"" }
                 ]
             }", includeNuGet: true);
 
-            using (var set = await ExtensionSetLoader.LoadExtensionsAsync(
-                context.RootDirectory,
+            var setLoader = new ExtensionSetLoader(context.RootDirectory, LogFactory, "autostep");
+
+            using (var set = await setLoader.LoadExtensionsAsync<IExtensionEntryPoint>(
                 context.Sources,
-                LogFactory,
-                context.Configuration,
+                context.Extensions,
+                false,
                 CancellationToken.None))
             {
                 set.LoadedPackages.Should().HaveCount(2);
                 set.LoadedPackages.Should().Contain(p => p.PackageId == "Newtonsoft.Json");
 
-                set.AttachToProject(context.Configuration, new Project());
+                AttachToDummyProject(set, context.Configuration);
+            }
+        }
+
+        [Fact]
+        public async Task CacheCanBeUsedOnSubsequentLoads()
+        {
+            using var context = GetExtensionTestContext(nameof(SimplePackageLoad), @"
+            {
+                ""extensions"": [
+                    { ""Package"" : ""TestExtension1"" }
+                ]
+            }");
+
+            var setLoader = new ExtensionSetLoader(context.RootDirectory, LogFactory, "autostep");
+
+            using (var set = await setLoader.LoadExtensionsAsync<IExtensionEntryPoint>(
+                context.Sources,
+                context.Extensions,
+                false,
+                CancellationToken.None))
+            {
+                set.LoadedPackages.Should().HaveCount(1);
+                set.LoadedPackages.First().PackageId.Should().Be("TestExtension1");
+                set.LoadedPackages.First().PackageVersion.Should().Be("1.0.0");
+
+                File.Exists(set.GetPackagePath("TestExtension1", "lib", "netstandard2.1", "TestExtension1.dll")).Should().BeTrue();
+            }
+
+            // Second load doesn't need any nuget sources; strict empty mock means it will throw if anything
+            // tries to access the nuget sources lists.
+            using (var set = await setLoader.LoadExtensionsAsync<IExtensionEntryPoint>(
+                new Mock<ISourceSettings>(MockBehavior.Strict).Object,
+                context.Extensions,
+                false,
+                CancellationToken.None))
+            {
+                set.LoadedPackages.Should().HaveCount(1);
+                set.LoadedPackages.First().PackageId.Should().Be("TestExtension1");
+                set.LoadedPackages.First().PackageVersion.Should().Be("1.0.0");
+
+                File.Exists(set.GetPackagePath("TestExtension1", "lib", "netstandard2.1", "TestExtension1.dll")).Should().BeTrue();
+            }
+        }
+
+
+        private void AttachToDummyProject(ILoadedExtensions<IExtensionEntryPoint> set, IConfiguration config)
+        {
+            var proj = new Project();
+            foreach (var entryPoint in set.ExtensionEntryPoints)
+            {
+                entryPoint.AttachToProject(config, proj);
             }
         }
     }

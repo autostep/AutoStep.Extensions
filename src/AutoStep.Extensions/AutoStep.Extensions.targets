@@ -1,7 +1,12 @@
 ﻿<Project>
+  <!-- 
+  
+    This targets file is included in the built NuGet Package. It's job is to ensure that the deps.json file
+    is copied to the output of anything that references the package, and to make sure it ends up in the published output.
+  
+  -->
+  
   <ItemGroup>
-    
-    
       <ExtDepsJson Include="$(MSBuildThisFileDirectory)\..\..\lib\netcoreapp3.1\AutoStep.Extensions.deps.json" />
   </ItemGroup>
   <Target Name="__CopyExtensionDepsJson" BeforeTargets="Build">

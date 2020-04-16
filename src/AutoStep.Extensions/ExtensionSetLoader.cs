@@ -5,78 +5,122 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Versioning;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
+using AutoStep.Extensions.Abstractions;
 using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.Logging;
 
 namespace AutoStep.Extensions
 {
-    public static class ExtensionSetLoader
+    /// <summary>
+    /// Entry point for loading extensions.
+    /// </summary>
+    public class ExtensionSetLoader
     {
-        private const string DefaultFramework = ".NETCoreApp,Version=3.1";
-
-        private const string AutoStepHiddenDirectory = ".autostep";
-        private const string AutoStepExtensionDirectory = "extensions";
         private const string ExtensionDependencyFile = "extensions.deps.json";
 
-        public static async Task<IExtensionSet> LoadExtensionsAsync(
-            string rootDirectory,
-            ExtensionSourceSettings sourceSettings,
-            ILoggerFactory logFactory,
-            IConfiguration projectConfig,
-            CancellationToken cancelToken)
+        private readonly string dependencyJsonFile;
+        private readonly string extensionsDirectory;
+        private readonly ILoggerFactory loggerFactory;
+        private readonly IHostContext hostContext;
+        private readonly ILogger<ExtensionSetLoader> logger;
+        private readonly CachedPackagesLoader cachedLoader;
+        private readonly NuGetPackagesLoader nugetLoader;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ExtensionSetLoader"/> class.
+        /// </summary>
+        /// <param name="extensionsDirectory">The directory that should contain all extension-related packages and files.</param>
+        /// <param name="loggerFactory">A logger factory to which the extension load process will write information.</param>
+        /// <param name="extensionPackageTag">An optional package tag to filter the set of packages that will be considered as 'entry points', and therefore implicitly loaded.</param>
+        public ExtensionSetLoader(string extensionsDirectory, ILoggerFactory loggerFactory, string? extensionPackageTag)
         {
+            if (!Path.IsPathFullyQualified(extensionsDirectory))
+            {
+                throw new ArgumentException(Messages.ExtensionSetLoader_ExtensionDirectoryMustBeFullyQualified);
+            }
+
+            this.extensionsDirectory = extensionsDirectory;
+            this.loggerFactory = loggerFactory;
+
             var hostAssembly = typeof(ExtensionSetLoader).Assembly;
 
-            var targetFramework = hostAssembly.GetCustomAttribute<TargetFrameworkAttribute>()?.FrameworkName ?? DefaultFramework;
+            // Need the dependency context for the host assembly, create a host context from that.
+            hostContext = new HostContext(hostAssembly);
 
-            var logger = logFactory.CreateLogger("extensions");
-
-            var extensionsFolder = Path.GetFullPath(Path.Combine(AutoStepHiddenDirectory, AutoStepExtensionDirectory), rootDirectory);
+            logger = loggerFactory.CreateLogger<ExtensionSetLoader>();
 
             // Ensure that the extensions folder exists.
-            var depFilePath = Path.Combine(extensionsFolder, ExtensionDependencyFile);
+            dependencyJsonFile = Path.Combine(extensionsDirectory, ExtensionDependencyFile);
+
+            cachedLoader = new CachedPackagesLoader(extensionsDirectory, hostContext, extensionPackageTag, logger);
+            nugetLoader = new NuGetPackagesLoader(extensionsDirectory, hostContext, extensionPackageTag, logger);
+        }
+
+        /// <summary>
+        /// Load a set of extensions.
+        /// </summary>
+        /// <typeparam name="TExtensionEntryPoint">
+        /// The load process will look for an 'entry point' in each loaded extension that is assignable to this type.
+        /// Typically this is an interface, or possibly an abstract class.</typeparam>
+        /// <param name="sourceSettings">The source settings, dictating where packages come from.</param>
+        /// <param name="configuredExtensions">A set of extension configuration, specifying which extensions to install.</param>
+        /// <param name="noCache">If set to true, then any existing caches will be ignored, and the set of packages will be downloaded directly.</param>
+        /// <param name="cancelToken">A cancellation token to abort the process.</param>
+        /// <returns>An awaitable task, containing the set of loaded extensions.</returns>
+        public async Task<ILoadedExtensions<TExtensionEntryPoint>> LoadExtensionsAsync<TExtensionEntryPoint>(
+            ISourceSettings sourceSettings,
+            IEnumerable<ExtensionConfiguration> configuredExtensions,
+            bool noCache,
+            CancellationToken cancelToken)
+            where TExtensionEntryPoint : IDisposable
+        {
+            if (sourceSettings is null)
+            {
+                throw new ArgumentNullException(nameof(sourceSettings));
+            }
+
+            if (configuredExtensions is null)
+            {
+                throw new ArgumentNullException(nameof(configuredExtensions));
+            }
 
             ExtensionPackages? resolvedPackages = null;
 
+            // Ensure that the extensions directory exists.
+            Directory.CreateDirectory(extensionsDirectory);
+
             // Take a lock on the dependency file.
-            using (var dependencyFileLock = await TakePathLock(depFilePath, cancelToken))
+            using (var dependencyFileLock = await TakePathLock(dependencyJsonFile, cancelToken))
             {
-                if (File.Exists(depFilePath))
+                if (!noCache && File.Exists(dependencyJsonFile))
                 {
                     // Load the dependency context.
-                    DependencyContext? cacheDepCtxt = LoadCachedDependencyInfo(depFilePath, logger);
+                    DependencyContext? cacheDepCtxt = LoadCachedDependencyInfo();
 
                     if (cacheDepCtxt is object)
                     {
-                        var cachedLoader = new CachedExtensionLoader(extensionsFolder, targetFramework, logger);
-
-                        resolvedPackages = cachedLoader.ResolveExtensionPackages(projectConfig, cacheDepCtxt);
+                        resolvedPackages = await cachedLoader.LoadExtensionPackagesAsync(configuredExtensions, cacheDepCtxt, cancelToken).ConfigureAwait(false);
                     }
                 }
 
                 if (resolvedPackages is null)
                 {
-                    // Need the dependency context for the host assembly.
-                    var depContext = LoadHostDependencyContext(hostAssembly);
-
-                    var nugetLoader = new NugetExtensionLoader(extensionsFolder, targetFramework, sourceSettings, depContext, logger);
-
-                    resolvedPackages = await nugetLoader.ResolveExtensionPackagesAsync(projectConfig, cancelToken).ConfigureAwait(false);
+                    resolvedPackages = await nugetLoader.LoadExtensionPackagesAsync(sourceSettings, configuredExtensions, false, cancelToken).ConfigureAwait(false);
 
                     // Save the new set of packages.
-                    SaveExtensionDependencyContext(projectConfig, depContext, resolvedPackages, depFilePath);
+                    SaveExtensionDependencyContext(configuredExtensions, resolvedPackages);
                 }
             }
 
-            var loadedSet = new ExtensionSet(projectConfig, resolvedPackages);
+            // Loads the extension entry points.
+            var loadedSet = new LoadedExtensions<TExtensionEntryPoint>(resolvedPackages);
 
-            loadedSet.Load(logFactory);
+            loadedSet.LoadEntryPoints(loggerFactory);
 
             return loadedSet;
         }
@@ -110,6 +154,9 @@ namespace AutoStep.Extensions
             return fileStream;
         }
 
+        /// <summary>
+        /// Creates a hash of an absolute path, that we can then use in another file name.
+        /// </summary>
         private static string HashPath(string path)
         {
             const string pathPrefix = "aslock_";
@@ -144,64 +191,68 @@ namespace AutoStep.Extensions
             return createdString;
         }
 
-        private static DependencyContext? LoadCachedDependencyInfo(string depFilePath, ILogger logger)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+            "Design",
+            "CA1031:Do not catch general exception types",
+            Justification = "Not sure what exceptions will be thrown by dependency context loader.")]
+        private DependencyContext? LoadCachedDependencyInfo()
         {
             try
             {
                 using var dependencyContextLdr = new DependencyContextJsonReader();
-                using var stream = File.OpenRead(depFilePath);
+                using var stream = File.OpenRead(dependencyJsonFile);
 
                 return dependencyContextLdr.Read(stream);
             }
             catch (Exception ex)
             {
                 // Corrupt file, IO error? Lets just assume we can't get the info.
-                logger.LogWarning(ex, "Corrupt or unavailable extension cache file. Ignoring cache.");
+                logger.LogWarning(ex, Messages.ExtensionSetLoader_CorruptExtensionCacheFile);
             }
 
             return null;
         }
 
-        private static void SaveExtensionDependencyContext(IConfiguration projectConfig, DependencyContext hostContext, ExtensionPackages packages, string outputPath)
+        private void SaveExtensionDependencyContext(IEnumerable<ExtensionConfiguration> configuredExtensions, ExtensionPackages packages)
         {
-            var targetIds = projectConfig.GetExtensionConfiguration().Select(x => x.Package).ToList();
+            var targetIds = configuredExtensions.Select(x => x.Package!).ToList();
 
             var newDepContext = new DependencyContext(
                 hostContext.Target,
                 CompilationOptions.Default,
                 Enumerable.Empty<CompilationLibrary>(),
-                packages.Packages.Select(p => new RuntimeLibrary(
-                    targetIds.Contains(p.PackageId) ? ExtensionRuntimeLibraryType.RootPackage : ExtensionRuntimeLibraryType.Dependency,
-                    p.PackageId,
-                    p.PackageVersion,
-                    null,
-                    new[] {
-                        new RuntimeAssetGroup(
-                            hostContext.Target.Runtime,
-                            p.LibFiles.Where(f => Path.GetExtension(f) == ".dll")
-                            .Select(f => GetRuntimeFile(p, f)))
-                    },
-                    new List<RuntimeAssetGroup>(),
-                    Enumerable.Empty<ResourceAssembly>(),
-                    p.Dependencies.Select(d => packages.Packages.FirstOrDefault(p => p.PackageId == d.Id))
-                                  .Where(d => d is object)
-                                  .Select(d => new Dependency(d.PackageId, d.PackageVersion)),
-                    true
-                    )),
-                Enumerable.Empty<RuntimeFallbacks>()
-            );
+                packages.Packages.Select(p => RuntimeLibraryFromPackage(targetIds, p, packages.Packages)),
+                Enumerable.Empty<RuntimeFallbacks>());
 
-            // Write the dependency files.
+            // Write the dependency file.
             var dependencyWriter = new DependencyContextWriter();
 
-            using (var fileStream = File.Open(outputPath, FileMode.Create, FileAccess.Write, FileShare.None))
+            using (var fileStream = File.Open(dependencyJsonFile, FileMode.Create, FileAccess.Write, FileShare.None))
             {
                 dependencyWriter.Write(newDepContext, fileStream);
             }
-
         }
 
-        private static RuntimeFile GetRuntimeFile(PackageEntry packageEntry, string file)
+        private RuntimeLibrary RuntimeLibraryFromPackage(IReadOnlyList<string> extensionIds, PackageMetadata package, IReadOnlyList<PackageMetadata> allPackages)
+        {
+            var runtimeAssetGroup = new RuntimeAssetGroup(hostContext.Target.Runtime, package.LibFiles.Where(f => Path.GetExtension(f) == ".dll")
+                                                                                         .Select(f => GetRuntimeFile(package, f)));
+
+            return new RuntimeLibrary(
+                      extensionIds.Contains(package.PackageId) ? ExtensionRuntimeLibraryTypes.RootPackage : ExtensionRuntimeLibraryTypes.Dependency,
+                      package.PackageId,
+                      package.PackageVersion,
+                      null,
+                      new[] { runtimeAssetGroup },
+                      new List<RuntimeAssetGroup>(),
+                      Enumerable.Empty<ResourceAssembly>(),
+                      package.Dependencies.Select(d => allPackages.FirstOrDefault(p => p.PackageId == d.Id))
+                                    .Where(d => d is object)
+                                    .Select(d => new Dependency(d.PackageId, d.PackageVersion)),
+                      true);
+        }
+
+        private static RuntimeFile GetRuntimeFile(PackageMetadata packageEntry, string file)
         {
             var fullPath = Path.GetFullPath(file, packageEntry.PackageFolder);
 
@@ -210,11 +261,6 @@ namespace AutoStep.Extensions
             var fileVersionInfo = FileVersionInfo.GetVersionInfo(fullPath);
 
             return new RuntimeFile(file, assemblyName.Version?.ToString(), fileVersionInfo.FileVersion);
-        }
-
-        private static DependencyContext LoadHostDependencyContext(Assembly hostAssembly)
-        {
-            return DependencyContext.Load(hostAssembly);
         }
     }
 }

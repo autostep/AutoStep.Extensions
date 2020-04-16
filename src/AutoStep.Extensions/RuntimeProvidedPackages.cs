@@ -4,11 +4,20 @@ using System.Text;
 
 namespace AutoStep.Extensions
 {
-    internal static class FrameworkPackages
+    /// <summary>
+    /// Contains a pre-determined list of NuGet packages that are provided by the run-time, and
+    /// therefore should not be restored from an extensions dependency list.
+    /// </summary>
+    internal static class RuntimeProvidedPackages
     {
-        public static bool IsPackageProvidedByFramework(string packageId)
+        /// <summary>
+        /// Checks whether the set of known runtime packages contains the given package ID.
+        /// </summary>
+        /// <param name="packageId">The package ID.</param>
+        /// <returns>True if the package is provided by the framework, otherwise false.</returns>
+        public static bool IsPackageProvidedByRuntime(string packageId)
         {
-            return providedPackages.Contains(packageId);
+            return ProvidedPackages.Contains(packageId);
         }
 
         /// <summary>
@@ -16,7 +25,7 @@ namespace AutoStep.Extensions
         /// at https://github.com/dotnet/sdk/blob/v3.1.201/src/Tasks/Common/targets/Microsoft.NET.DefaultPackageConflictOverrides.targets.
         /// If the executing binaries ever change to a newer version, this project must update as well, and refresh this list.
         /// </summary>
-        private static readonly ISet<string> providedPackages = new HashSet<string>
+        private static readonly ISet<string> ProvidedPackages = new HashSet<string>
         {
             "Microsoft.CSharp",
             "Microsoft.Win32.Primitives",

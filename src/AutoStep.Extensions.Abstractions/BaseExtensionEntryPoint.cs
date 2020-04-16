@@ -55,7 +55,7 @@ namespace AutoStep.Extensions
         /// <inheritdoc/>
         [System.Diagnostics.CodeAnalysis.SuppressMessage(
             "Design",
-            "CA1063:Implement IDisposable Correctly", 
+            "CA1063:Implement IDisposable Correctly",
             Justification = "It is correct, just a slight variant to make it easier on implementations.")]
         public void Dispose()
         {
