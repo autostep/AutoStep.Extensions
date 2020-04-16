@@ -30,7 +30,7 @@ namespace AutoStep.Extensions.Tests
             using var context = GetExtensionTestContext(nameof(ExtensionEventHandlerInvoked), @"
             {
                 ""extensions"": [
-                    { ""Package"" : ""TestExtensionWithEventHandler"" }
+                    { ""Package"" : ""TestExtensionWithEventHandler"", ""prerelease"": true }
                 ]
             }");
 

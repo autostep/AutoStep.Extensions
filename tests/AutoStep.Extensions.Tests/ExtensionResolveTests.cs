@@ -28,7 +28,7 @@ namespace AutoStep.Extensions.Tests
             using var context = GetExtensionTestContext(nameof(SimplePackageLoad), @"
             {
                 ""extensions"": [
-                    { ""Package"" : ""TestExtension1"" }
+                    { ""Package"" : ""TestExtension1"", ""prerelease"": true }
                 ]
             }");
 
@@ -42,7 +42,7 @@ namespace AutoStep.Extensions.Tests
             {
                 set.LoadedPackages.Should().HaveCount(1);
                 set.LoadedPackages.First().PackageId.Should().Be("TestExtension1");
-                set.LoadedPackages.First().PackageVersion.Should().Be("1.0.0");
+                set.LoadedPackages.First().PackageVersion.Should().Be("1.0.0-alpha-1");
 
                 File.Exists(set.GetPackagePath("TestExtension1", "lib", "netstandard2.1", "TestExtension1.dll")).Should().BeTrue();
             }
@@ -54,7 +54,7 @@ namespace AutoStep.Extensions.Tests
             using var context = GetExtensionTestContext(nameof(ExtensionWithDependency), @"
             {
                 ""extensions"": [
-                    { ""Package"" : ""TestExtensionReferencesNewtonSoft"" }
+                    { ""Package"" : ""TestExtensionReferencesNewtonSoft"", ""prerelease"": true }
                 ]
             }", includeNuGet: true);
 
@@ -79,7 +79,7 @@ namespace AutoStep.Extensions.Tests
             using var context = GetExtensionTestContext(nameof(SimplePackageLoad), @"
             {
                 ""extensions"": [
-                    { ""Package"" : ""TestExtension1"" }
+                    { ""Package"" : ""TestExtension1"", ""prerelease"": true }
                 ]
             }");
 
@@ -93,7 +93,7 @@ namespace AutoStep.Extensions.Tests
             {
                 set.LoadedPackages.Should().HaveCount(1);
                 set.LoadedPackages.First().PackageId.Should().Be("TestExtension1");
-                set.LoadedPackages.First().PackageVersion.Should().Be("1.0.0");
+                set.LoadedPackages.First().PackageVersion.Should().Be("1.0.0-alpha-1");
 
                 File.Exists(set.GetPackagePath("TestExtension1", "lib", "netstandard2.1", "TestExtension1.dll")).Should().BeTrue();
             }
@@ -108,7 +108,7 @@ namespace AutoStep.Extensions.Tests
             {
                 set.LoadedPackages.Should().HaveCount(1);
                 set.LoadedPackages.First().PackageId.Should().Be("TestExtension1");
-                set.LoadedPackages.First().PackageVersion.Should().Be("1.0.0");
+                set.LoadedPackages.First().PackageVersion.Should().Be("1.0.0-alpha-1");
 
                 File.Exists(set.GetPackagePath("TestExtension1", "lib", "netstandard2.1", "TestExtension1.dll")).Should().BeTrue();
             }
