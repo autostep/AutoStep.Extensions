@@ -151,10 +151,10 @@ namespace AutoStep.Extensions
                 }
                 else
                 {
-#pragma warning disable CA2000 // Dispose objects before losing scope - we are doing this, in the finally block below.
+                    #pragma warning disable CA2000 // Dispose objects before losing scope - we are doing this, in the finally block below.
                     // Analyzer isn't picking it up.
                     packageReader = new PackageFolderReader(installedPath);
-#pragma warning restore CA2000
+                    #pragma warning restore CA2000
                 }
 
                 try

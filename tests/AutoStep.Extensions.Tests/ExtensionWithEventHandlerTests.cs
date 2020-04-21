@@ -87,7 +87,7 @@ namespace AutoStep.Extensions.Tests
                 entryPoint.ExtendExecution(context.Configuration, testRun);
             }
 
-            await testRun.ExecuteAsync();
+            await testRun.ExecuteAsync(CancellationToken.None);
 
             myHandler.Error.Should().NotBeNull();
         }
@@ -96,11 +96,11 @@ namespace AutoStep.Extensions.Tests
         {
             public Exception? Error { get; set; }
 
-            public override async ValueTask OnExecute(IServiceProvider scope, RunContext ctxt, Func<IServiceProvider, RunContext, ValueTask> nextHandler)
+            public override async ValueTask OnExecuteAsync(IServiceProvider scope, RunContext ctxt, Func<IServiceProvider, RunContext, CancellationToken, ValueTask> nextHandler, CancellationToken cancelToken)
             {
                 try
                 {
-                    await nextHandler(scope, ctxt);
+                    await nextHandler(scope, ctxt, cancelToken);
                 }
                 catch (Exception ex)
                 {
