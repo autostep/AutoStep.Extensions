@@ -10,13 +10,13 @@ namespace AutoStep.Extensions
     /// </summary>
     internal class ExtensionsAssemblyLoadContext : AssemblyLoadContext
     {
-        private readonly ExtensionPackages extFiles;
+        private readonly InstalledExtensionPackages extFiles;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ExtensionsAssemblyLoadContext"/> class.
         /// </summary>
         /// <param name="extFiles">The set of packages that contain files loadable by this context.</param>
-        public ExtensionsAssemblyLoadContext(ExtensionPackages extFiles)
+        public ExtensionsAssemblyLoadContext(InstalledExtensionPackages extFiles)
             : base(true)
         {
             this.extFiles = extFiles;

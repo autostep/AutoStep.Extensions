@@ -10,14 +10,9 @@ namespace AutoStep.Extensions.Abstractions
     public interface ILoadedExtensions : IDisposable
     {
         /// <summary>
-        /// Gets the root directory for the set of extensions.
-        /// </summary>
-        string ExtensionsRootDir { get; }
-
-        /// <summary>
         /// Gets the loaded package metadata.
         /// </summary>
-        IEnumerable<IPackageMetadata> LoadedPackages { get; }
+        IEnumerable<IPackageMetadata> Packages { get; }
 
         /// <summary>
         /// Checks whether a package with a given ID has been loaded.

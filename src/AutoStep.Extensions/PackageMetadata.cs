@@ -26,7 +26,7 @@ namespace AutoStep.Extensions
             string? entryPoint,
             IEnumerable<string> libFiles,
             bool isTopLevel,
-            IEnumerable<PackageDependency>? dependencies = null)
+            IEnumerable<string>? dependencies = null)
         {
             PackageId = packageId;
             PackageVersion = packageVersion;
@@ -34,7 +34,7 @@ namespace AutoStep.Extensions
             LibFiles = libFiles.ToList();
             EntryPoint = entryPoint;
             IsTopLevel = isTopLevel;
-            Dependencies = dependencies ?? Enumerable.Empty<PackageDependency>();
+            Dependencies = dependencies ?? Enumerable.Empty<string>();
         }
 
         /// <inheritdoc/>
@@ -61,9 +61,6 @@ namespace AutoStep.Extensions
         /// </summary>
         public bool IsTopLevel { get; }
 
-        /// <summary>
-        /// Gets the set of dependencies for this package.
-        /// </summary>
-        public IEnumerable<PackageDependency> Dependencies { get; }
+        public IEnumerable<string> Dependencies { get; }
     }
 }

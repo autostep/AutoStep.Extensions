@@ -22,7 +22,7 @@ namespace AutoStep.Extensions
         /// Initializes a new instance of the <see cref="HostContext"/> class.
         /// </summary>
         /// <param name="hostAssembly">An assembly indicating the host context.</param>
-        public HostContext(Assembly hostAssembly)
+        public HostContext(Assembly hostAssembly, string extensionsDirectory, string? entryPointPackageTag)
         {
             if (hostAssembly is null)
             {
@@ -33,6 +33,8 @@ namespace AutoStep.Extensions
             FrameworkName = hostDependencyContext.Target.Framework;
             TargetFramework = NuGetFramework.ParseFrameworkName(FrameworkName, DefaultFrameworkNameProvider.Instance);
             frameworkReducer = new FrameworkReducer();
+            EntryPointPackageTag = entryPointPackageTag;
+            ExtensionsDirectory = extensionsDirectory;
         }
 
         /// <inheritdoc/>
@@ -43,6 +45,10 @@ namespace AutoStep.Extensions
 
         /// <inheritdoc/>
         public TargetInfo Target => hostDependencyContext.Target;
+
+        public string? EntryPointPackageTag { get; }
+
+        public string ExtensionsDirectory { get; }
 
         /// <inheritdoc/>
         public IEnumerable<string> GetFrameworkFiles(IEnumerable<FrameworkSpecificGroup> frameworkGroup)
@@ -72,7 +78,7 @@ namespace AutoStep.Extensions
         public bool DependencySuppliedByHost(PackageDependency dep)
         {
             // Is the package provided by the fr
-            return !RuntimeProvidedPackages.IsPackageProvidedByRuntime(dep.Id) && !LibrarySuppliedByHost(dep);
+            return RuntimeProvidedPackages.IsPackageProvidedByRuntime(dep.Id) || LibrarySuppliedByHost(dep);
         }
 
         private bool LibrarySuppliedByHost(PackageDependency dep)

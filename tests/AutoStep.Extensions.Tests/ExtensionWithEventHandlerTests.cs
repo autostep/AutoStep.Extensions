@@ -36,11 +36,18 @@ namespace AutoStep.Extensions.Tests
 
             var setLoader = new ExtensionSetLoader(context.RootDirectory, LogFactory, "autostep");
 
-            using (var set = await setLoader.LoadExtensionsAsync<IExtensionEntryPoint>(
+            var resolvedPackages = await setLoader.ResolveExtensionsAsync(
                 context.Sources,
                 context.Extensions,
+                context.FolderExtensions,
                 false,
-                CancellationToken.None))
+                CancellationToken.None);
+
+            resolvedPackages.IsValid.Should().BeTrue();
+
+            var installedSet = await resolvedPackages.InstallAsync(CancellationToken.None);
+
+            using (var loadedExtensions = installedSet.LoadExtensionsFromPackages<IExtensionEntryPoint>(LogFactory))
             {
                 var file = new ProjectTestFile("/test", new StringContentSource(""));
                 var builtFile = new FileElement
@@ -61,7 +68,7 @@ namespace AutoStep.Extensions.Tests
                 file.UpdateLastCompileResult(new FileCompilerResult(true, builtFile));
                 file.UpdateLastLinkResult(new LinkResult(true, Enumerable.Empty<LanguageOperationMessage>(), null, builtFile));
 
-                await DoExecuteTest(set, context, file);
+                await DoExecuteTest(loadedExtensions, context, file);
             }
         }
 

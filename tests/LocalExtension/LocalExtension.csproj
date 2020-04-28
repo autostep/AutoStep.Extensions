@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <Version>1.0.0-alpha-1</Version>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageTags>autostep</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AutoStep" Version="1.0.0-develop.297" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="AutoStep.Extensions.Abstractions" Version="1.0.0-*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LocalExtensionDependency\LocalExtensionDependency.csproj" />
+  </ItemGroup>
+
+</Project>

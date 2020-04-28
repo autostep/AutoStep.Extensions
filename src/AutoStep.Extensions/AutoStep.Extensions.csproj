@@ -25,12 +25,24 @@
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
+    <None Include="Build\containerproj.csproj">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   
   <ItemGroup>
     <PackageReference Include="AutoStep" Version="1.0.0-develop.297" />
-    <PackageReference Include="NuGet.Protocol" Version="5.5.1" />
-    <PackageReference Include="NuGet.Resolver" Version="5.5.1" />
+    <PackageReference Include="Microsoft.Build" Version="16.5.0">
+      <ExcludeAssets>runtime</ExcludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Build.Framework" Version="16.5.0">
+      <ExcludeAssets>runtime</ExcludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Build.Locator" Version="1.2.6" />
+    <PackageReference Include="NuGet.Protocol" Version="5.5.0" />
+    <PackageReference Include="NuGet.Resolver" Version="5.5.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="3.1.3" />
     <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.8">
       <PrivateAssets>all</PrivateAssets>
@@ -53,6 +65,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Build\BuildStrings.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>BuildStrings.resx</DependentUpon>
+    </Compile>
     <Compile Update="Messages.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -61,6 +78,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Update="Build\BuildStrings.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>BuildStrings.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <EmbeddedResource Update="Messages.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Messages.Designer.cs</LastGenOutput>

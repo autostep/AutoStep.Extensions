@@ -27,6 +27,13 @@ namespace AutoStep.Extensions
         string FrameworkName { get; }
 
         /// <summary>
+        /// Tag used to filter the nuget packages that should be checked for an extension entry point.
+        /// </summary>
+        string? EntryPointPackageTag { get; }
+
+        string ExtensionsDirectory { get; }
+
+        /// <summary>
         /// Checks whether a given NuGet package reference is supplied by the host,
         /// and should not be downloaded from NuGet.
         /// </summary>

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NuGet.Configuration;
 
-namespace AutoStep.Extensions
+namespace AutoStep.Extensions.NuGetExtensions
 {
     /// <summary>
     /// Provides an <see cref="ISourceSettings"/> implementation that allows a custom package source list to
@@ -56,9 +56,9 @@ namespace AutoStep.Extensions
 
             public string DefaultPushSource => throw new NotImplementedException();
 
-            #pragma warning disable CS0067 // Not raising it, but required by the interface.
+#pragma warning disable CS0067 // Not raising it, but required by the interface.
             public event EventHandler? PackageSourcesChanged;
-            #pragma warning restore CS0067
+#pragma warning restore CS0067
 
             public CustomPackageSourceProvider(IEnumerable<PackageSource> sources)
             {

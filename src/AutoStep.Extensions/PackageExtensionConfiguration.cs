@@ -3,7 +3,7 @@
     /// <summary>
     /// Represents the configuration for a single extension to install.
     /// </summary>
-    public class ExtensionConfiguration
+    public class PackageExtensionConfiguration
     {
         /// <summary>
         /// Gets or sets the package ID.
