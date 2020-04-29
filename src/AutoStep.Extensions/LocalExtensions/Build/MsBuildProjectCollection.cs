@@ -159,7 +159,8 @@ namespace AutoStep.Extensions.Build
                     "dotnet",
                     project.Directory,
                     "build",
-                    "-v minimal");
+                    "-v",
+                    "minimal");
 
                 var exitCode = await processRun.Run().ConfigureAwait(false);
 

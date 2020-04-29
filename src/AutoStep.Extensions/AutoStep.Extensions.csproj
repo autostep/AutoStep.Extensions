@@ -31,9 +31,9 @@
     <PackageReference Include="AutoStep" Version="1.0.0-develop.297" />
 
     <!-- 
-    MSB3277 ' warning codes are raised during MSBuild evaluation
+    MSB3277 warning codes are raised during MSBuild evaluation
     There are three reference conflicts that currently occur, simply due to the presence of the MSBuild package,
-    which isn't copied at runtime:
+    which isn't copied at runtime (it's loaded dynamically from the available installed MSBuild).
       - Microsoft.Win32.Registry
       - System.Security.Cryptography.ProtectedData
       - System.Security.Principal.Windows.
