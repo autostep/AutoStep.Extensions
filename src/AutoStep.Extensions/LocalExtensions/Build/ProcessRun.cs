@@ -50,7 +50,6 @@ namespace AutoStep.Extensions.Build
                     FileName = exeName,
                     WorkingDirectory = workingDirectory,
                     Arguments = string.Join(" ", args),
-                    LoadUserProfile = true,
                     RedirectStandardError = true,
                     RedirectStandardOutput = true,
                     RedirectStandardInput = true,
