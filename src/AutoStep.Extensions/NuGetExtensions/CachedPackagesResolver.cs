@@ -81,6 +81,11 @@ namespace AutoStep.Extensions.NuGetExtensions
             Justification = "Not sure what exceptions will be thrown by dependency context loader.")]
         private DependencyContext? LoadCachedDependencyInfo()
         {
+            if (!File.Exists(dependencyJsonFile))
+            {
+                return null;
+            }
+
             try
             {
                 using var dependencyContextLdr = new DependencyContextJsonReader();

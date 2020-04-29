@@ -128,8 +128,6 @@ namespace AutoStep.Extensions.NuGetExtensions
 
         private void SaveExtensionDependencyContext(ExtensionResolveContext resolveContext, InstalledExtensionPackages packages)
         {
-            // Target IDs to be saved in the dependency context needs to include any additional packages required
-            // by other extension resolvers.
             var targetIds = new HashSet<string>(resolveContext.PackageExtensions.Select(x => x.Package!));
 
             var newDepContext = new DependencyContext(
