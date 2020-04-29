@@ -10,15 +10,23 @@ using NuGet.Packaging.Signing;
 
 namespace AutoStep.Extensions
 {
+    /// <summary>
+    /// Provides an extension packages resolver that checks multiple wrapped resolvers, and returns an composite package set.
+    /// </summary>
     internal class CompositeExtensionResolver : IExtensionPackagesResolver
     {
         private readonly IExtensionPackagesResolver[] resolvers;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CompositeExtensionResolver"/> class.
+        /// </summary>
+        /// <param name="resolvers">The set opf wrapped resolvers.</param>
         public CompositeExtensionResolver(params IExtensionPackagesResolver[] resolvers)
         {
             this.resolvers = resolvers;
         }
 
+        /// <inheritdoc/>
         public async ValueTask<IInstallablePackageSet> ResolvePackagesAsync(ExtensionResolveContext resolveContext, CancellationToken cancelToken)
         {
             var resolved = new LinkedList<IInstallablePackageSet>();

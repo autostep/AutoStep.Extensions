@@ -13,36 +13,53 @@ using NuGet.Versioning;
 
 namespace AutoStep.Extensions.NuGetExtensions
 {
+    /// <summary>
+    /// A resolver for the set of cached packages already installed.
+    /// </summary>
     internal class CachedPackagesResolver : IExtensionPackagesResolver
     {
         private readonly IHostContext hostContext;
-        private readonly DependencyContext knownCache;
+        private readonly string dependencyJsonFile;
         private readonly ILogger logger;
 
-        public CachedPackagesResolver(IHostContext hostContext, DependencyContext knownCache, ILogger logger)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CachedPackagesResolver"/> class.
+        /// </summary>
+        /// <param name="hostContext">The host context.</param>
+        /// <param name="dependencyJsonFile">The path to the dependency cache JSON file.</param>
+        /// <param name="logger">A logger.</param>
+        public CachedPackagesResolver(IHostContext hostContext, string dependencyJsonFile, ILogger logger)
         {
             this.hostContext = hostContext;
-            this.knownCache = knownCache;
+            this.dependencyJsonFile = dependencyJsonFile;
             this.logger = logger;
         }
 
+        /// <inheritdoc/>
         public async ValueTask<IInstallablePackageSet> ResolvePackagesAsync(ExtensionResolveContext resolveContext, CancellationToken cancelToken)
         {
             logger.LogDebug(Messages.CachedPackagesResolver_CacheExistsVerifying);
 
-            var cacheValid = ValidateRootPackages(resolveContext);
+            var knownCache = LoadCachedDependencyInfo();
+
+            if (knownCache is null)
+            {
+                return new InvalidPackageSet();
+            }
+
+            var cacheValid = ValidateRootPackages(resolveContext, knownCache);
 
             if (cacheValid)
             {
                 logger.LogDebug(Messages.CachedPackagesResolver_RootPackagesValid);
 
                 // Now we need to validate the files and build the package set.
-                var packageSet = await LoadPackageSet(cancelToken).ConfigureAwait(false);
+                var packageSet = await LoadPackageSet(knownCache, cancelToken).ConfigureAwait(false);
 
                 if (packageSet is object)
                 {
                     logger.LogDebug(Messages.CachedPackagesResolver_CacheValid);
-                    return new CachedInstallablePackagesSet(new InstalledExtensionPackages(packageSet));
+                    return new AlreadyInstalledPackagesSet(new InstalledExtensionPackages(packageSet));
                 }
                 else
                 {
@@ -58,6 +75,28 @@ namespace AutoStep.Extensions.NuGetExtensions
             return new InvalidPackageSet();
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+            "Design",
+            "CA1031:Do not catch general exception types",
+            Justification = "Not sure what exceptions will be thrown by dependency context loader.")]
+        private DependencyContext? LoadCachedDependencyInfo()
+        {
+            try
+            {
+                using var dependencyContextLdr = new DependencyContextJsonReader();
+                using var stream = File.OpenRead(dependencyJsonFile);
+
+                return dependencyContextLdr.Read(stream);
+            }
+            catch (Exception ex)
+            {
+                // Corrupt file, IO error? Lets just assume we can't get the info.
+                logger.LogWarning(ex, Messages.ExtensionSetLoader_CorruptExtensionCacheFile);
+            }
+
+            return null;
+        }
+
         /// <summary>
         /// Look for all runtime libraries that are declared as 'rootPackage' type.
         /// If the set of root packages have changed from the list of extensions, we can throw away
@@ -65,8 +104,10 @@ namespace AutoStep.Extensions.NuGetExtensions
         ///
         /// If an explicit version is set in the extensions config, and that version is no longer met by
         /// the version in the cache, then we will also go again.
+        ///
+        /// If any 'additional packages' have been requested, and they are not also present in the cache, then don't use the cache.
         /// </summary>
-        private bool ValidateRootPackages(ExtensionResolveContext resolveContext)
+        private bool ValidateRootPackages(ExtensionResolveContext resolveContext, DependencyContext knownCache)
         {
             var rootRuntimeLibraries = knownCache.RuntimeLibraries.Where(x => x.Type == ExtensionRuntimeLibraryTypes.RootPackage).ToDictionary(x => x.Name);
             var isValid = true;
@@ -190,7 +231,7 @@ namespace AutoStep.Extensions.NuGetExtensions
             return isValid;
         }
 
-        private async Task<IReadOnlyList<PackageMetadata>?> LoadPackageSet(CancellationToken cancelToken)
+        private async Task<IReadOnlyList<PackageMetadata>?> LoadPackageSet(DependencyContext knownCache, CancellationToken cancelToken)
         {
             var loadedPackages = new List<PackageMetadata>();
             var isValid = true;

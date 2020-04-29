@@ -5,27 +5,38 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using AutoStep.Extensions.LocalExtensions.Build;
 
 namespace AutoStep.Extensions.LocalExtensions
 {
+    /// <summary>
+    /// Defines an installable set of packages backed by built MSBuild projects.
+    /// </summary>
     internal class LocalInstallableSet : IInstallablePackageSet
     {
         private readonly IReadOnlyList<LocalProjectPackage> packages;
         private readonly IHostContext hostContext;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LocalInstallableSet"/> class.
+        /// </summary>
+        /// <param name="packages">The set of project packages.</param>
+        /// <param name="hostContext">The host context.</param>
         public LocalInstallableSet(IReadOnlyList<LocalProjectPackage> packages, IHostContext hostContext)
         {
             this.packages = packages;
             this.hostContext = hostContext;
         }
 
+        /// <inheritdoc/>
         public IEnumerable<string> PackageIds => packages.Select(x => x.ProjectName);
 
+        /// <inheritdoc/>
         public bool IsValid => true;
 
+        /// <inheritdoc/>
         public Exception? Exception => null;
 
+        /// <inheritdoc/>
         public async ValueTask<InstalledExtensionPackages> InstallAsync(CancellationToken cancelToken)
         {
             // Install the packages (copy the files over).
@@ -45,7 +56,7 @@ namespace AutoStep.Extensions.LocalExtensions
                 }
 
                 // Copy the source directory.
-                await CopyDirectoryAsync(project.BinaryDirectory, destinationDirectory, cancelToken);
+                await CopyDirectoryAsync(project.BinaryDirectory, destinationDirectory, cancelToken).ConfigureAwait(false);
 
                 string? entryPoint = null;
 
@@ -71,23 +82,27 @@ namespace AutoStep.Extensions.LocalExtensions
             return new InstalledExtensionPackages(packageMetadata);
         }
 
+        /// <summary>
+        /// Recursive directory copy behaviour, with async file copies.
+        /// </summary>
         private async Task CopyDirectoryAsync(string sourceDirectory, string targetDirectory, CancellationToken cancelToken)
         {
             const FileOptions CopyFileOptions = FileOptions.Asynchronous | FileOptions.SequentialScan;
             const int BufferSize = 4096;
 
-            // Now copy the files.
             Directory.CreateDirectory(targetDirectory);
 
             var sourceInfo = new DirectoryInfo(sourceDirectory);
 
             foreach (var fileSystemEntry in sourceInfo.EnumerateFileSystemInfos())
             {
+                cancelToken.ThrowIfCancellationRequested();
+
                 if (fileSystemEntry is DirectoryInfo directory)
                 {
                     var destination = Path.Combine(targetDirectory, directory.Name);
 
-                    await CopyDirectoryAsync(directory.FullName, destination, cancelToken);
+                    await CopyDirectoryAsync(directory.FullName, destination, cancelToken).ConfigureAwait(false);
                 }
                 else if (fileSystemEntry is FileInfo file)
                 {

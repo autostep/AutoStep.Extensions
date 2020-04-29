@@ -13,6 +13,9 @@ using NuGet.Versioning;
 
 namespace AutoStep.Extensions.NuGetExtensions
 {
+    /// <summary>
+    /// Extension package resolver for NuGet Packages.
+    /// </summary>
     internal class NugetPackagesResolver : IExtensionPackagesResolver
     {
         private readonly ISourceSettings sourceSettings;
@@ -21,6 +24,13 @@ namespace AutoStep.Extensions.NuGetExtensions
         private readonly ILogger logger;
         private readonly IEnumerable<SourceRepository> repositories;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="NugetPackagesResolver"/> class.
+        /// </summary>
+        /// <param name="sourceSettings">The nuget source settings.</param>
+        /// <param name="hostContext">The host context.</param>
+        /// <param name="noCache">If true, do not use the nuget cache.</param>
+        /// <param name="logger">A logger.</param>
         public NugetPackagesResolver(
             ISourceSettings sourceSettings,
             IHostContext hostContext,
@@ -38,6 +48,11 @@ namespace AutoStep.Extensions.NuGetExtensions
             repositories = sourceRepositoryProvider.GetRepositories();
         }
 
+        /// <inheritdoc/>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+            "Design",
+            "CA1031:Do not catch general exception types",
+            Justification = "Any nuget load problem should be caught.")]
         public async ValueTask<IInstallablePackageSet> ResolvePackagesAsync(ExtensionResolveContext resolveContext, CancellationToken cancelToken)
         {
             if (!resolveContext.PackageExtensions.Any() && resolveContext.AdditionalPackagesRequired.Count == 0)

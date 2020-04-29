@@ -13,6 +13,9 @@ using NuGet.Protocol.Core.Types;
 
 namespace AutoStep.Extensions.NuGetExtensions
 {
+    /// <summary>
+    /// Represents an installable set of nuget packages.
+    /// </summary>
     internal class NugetInstallablePackageSet : IInstallablePackageSet
     {
         private readonly ISourceSettings settings;
@@ -22,6 +25,15 @@ namespace AutoStep.Extensions.NuGetExtensions
         private readonly bool noCache;
         private readonly ILogger logger;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="NugetInstallablePackageSet"/> class.
+        /// </summary>
+        /// <param name="settings">The nuget settings.</param>
+        /// <param name="hostContext">The host context.</param>
+        /// <param name="packagesToInstall">The set of all packages to install.</param>
+        /// <param name="targetIds">The set of targeted packages (i.e. extension packages).</param>
+        /// <param name="noCache">If true, do not use the NuGet cache.</param>
+        /// <param name="logger">A logger.</param>
         public NugetInstallablePackageSet(
             ISourceSettings settings,
             IHostContext hostContext,
@@ -38,20 +50,18 @@ namespace AutoStep.Extensions.NuGetExtensions
             this.logger = logger;
         }
 
+        /// <inheritdoc/>
         public IEnumerable<string> PackageIds => packagesToInstall.Select(x => x.Id);
 
+        /// <inheritdoc/>
         public bool IsValid => true;
 
+        /// <inheritdoc/>
         public Exception? Exception => null;
 
+        /// <inheritdoc/>
         public async ValueTask<InstalledExtensionPackages> InstallAsync(CancellationToken cancelToken)
         {
-            if (!IsValid)
-            {
-                // Cannot install if this instance isn't verified.
-                throw new InvalidOperationException("Cannot install an invalid package set.");
-            }
-
             if (!packagesToInstall.Any())
             {
                 return InstalledExtensionPackages.Empty;

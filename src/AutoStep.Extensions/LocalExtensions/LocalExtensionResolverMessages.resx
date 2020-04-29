@@ -117,13 +117,28 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="BuildFailed" xml:space="preserve">
-    <value>Build failed.</value>
+  <data name="BuildFailure" xml:space="preserve">
+    <value>One of more of the configured local projects could not be built, so we cannot continue.</value>
   </data>
-  <data name="BuildStarted" xml:space="preserve">
-    <value>Build Started.</value>
+  <data name="BuildingProjects" xml:space="preserve">
+    <value>Building Local Projects.</value>
   </data>
-  <data name="BuildSucceeded" xml:space="preserve">
-    <value>Build succeeded.</value>
+  <data name="ExtensionFolderDoesNotExist" xml:space="preserve">
+    <value>Configured extension folder '{0}' does not exist.</value>
+  </data>
+  <data name="FolderDoesNotHaveAProjectFile" xml:space="preserve">
+    <value>Configured extension folder '{0}' does not contain a .NET project file.</value>
+  </data>
+  <data name="IncludingProjectFile" xml:space="preserve">
+    <value>Including .NET Project File '{0}' as a local extension.</value>
+  </data>
+  <data name="NoFolderProvided" xml:space="preserve">
+    <value>No folder provided for configured local extension.</value>
+  </data>
+  <data name="NoSDK" xml:space="preserve">
+    <value>Could not find an installed dotnet SDK on this machine. Using folder extensions with code requires the dotnet SDK, which can be downloaded from https://dotnet.microsoft.com/download/.</value>
+  </data>
+  <data name="ProjectsBuiltOk" xml:space="preserve">
+    <value>Local Projects Built Successfully.</value>
   </data>
 </root>

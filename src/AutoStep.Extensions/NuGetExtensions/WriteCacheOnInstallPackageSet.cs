@@ -13,32 +13,46 @@ using Microsoft.Extensions.DependencyModel;
 
 namespace AutoStep.Extensions.NuGetExtensions
 {
-    internal class CacheOnInstallPackageSet : IInstallablePackageSet
+    /// <summary>
+    /// Wraps another <see cref="IInstallablePackageSet"/>, and updates the dependency cache JSON file when that set has installed.
+    /// </summary>
+    internal class WriteCacheOnInstallPackageSet : IInstallablePackageSet
     {
         private readonly string dependencyJsonFile;
         private readonly IHostContext hostContext;
         private readonly ExtensionResolveContext resolveContext;
-        private readonly IInstallablePackageSet backingSet;
+        private readonly IInstallablePackageSet wrappedPackageSet;
 
-        public CacheOnInstallPackageSet(string dependencyJsonFile, IHostContext hostContext, ExtensionResolveContext resolveContext, IInstallablePackageSet backingSet)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WriteCacheOnInstallPackageSet"/> class.
+        /// </summary>
+        /// <param name="dependencyJsonFile">The path to the dependency JSON file.</param>
+        /// <param name="hostContext">The host context.</param>
+        /// <param name="resolveContext">The extension resolve context.</param>
+        /// <param name="wrappedPackageSet">The backing set.</param>
+        public WriteCacheOnInstallPackageSet(string dependencyJsonFile, IHostContext hostContext, ExtensionResolveContext resolveContext, IInstallablePackageSet wrappedPackageSet)
         {
             this.dependencyJsonFile = dependencyJsonFile;
             this.hostContext = hostContext;
             this.resolveContext = resolveContext;
-            this.backingSet = backingSet;
+            this.wrappedPackageSet = wrappedPackageSet;
         }
 
-        public IEnumerable<string> PackageIds => backingSet.PackageIds;
+        /// <inheritdoc/>
+        public IEnumerable<string> PackageIds => wrappedPackageSet.PackageIds;
 
+        /// <inheritdoc/>
         public bool IsValid => true;
 
+        /// <inheritdoc/>
         public Exception? Exception => null;
 
+        /// <inheritdoc/>
         public async ValueTask<InstalledExtensionPackages> InstallAsync(CancellationToken cancelToken)
         {
             using (var dependencyFileLock = await TakePathLock(dependencyJsonFile, cancelToken))
             {
-                var result = await backingSet.InstallAsync(cancelToken);
+                var result = await wrappedPackageSet.InstallAsync(cancelToken);
 
                 SaveExtensionDependencyContext(resolveContext, result);
 

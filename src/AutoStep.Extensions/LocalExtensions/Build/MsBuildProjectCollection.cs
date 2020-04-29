@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
+using AutoStep.Extensions.LocalExtensions;
 using AutoStep.Extensions.LocalExtensions.Build;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
@@ -13,15 +13,19 @@ using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace AutoStep.Extensions.Build
 {
-    internal class MsBuildLoadContext : IDisposable
+    /// <summary>
+    /// Contains a set of loaded MSBuild projects, that can be interrogated and built.
+    /// </summary>
+    internal class MsBuildProjectCollection : IDisposable
     {
         private readonly IHostContext hostContext;
         private readonly ILogger logger;
         private readonly ProjectCollection projectCollection;
         private readonly ProjectGraph graph;
 
-        private MsBuildLoadContext(IEnumerable<string> projectPaths, IHostContext hostContext, ILogger logger, IDictionary<string, string> configOptions)
+        private MsBuildProjectCollection(IEnumerable<string> projectPaths, IHostContext hostContext, ILogger logger, IDictionary<string, string> configOptions)
         {
+            // Define a project collection, and construct the graph of projects.
             projectCollection = new ProjectCollection(configOptions);
             graph = new ProjectGraph(projectPaths, projectCollection);
 
@@ -29,7 +33,14 @@ namespace AutoStep.Extensions.Build
             this.logger = logger;
         }
 
-        public static MsBuildLoadContext Create(IEnumerable<string> projectPaths, ILogger logger, IHostContext hostContext)
+        /// <summary>
+        /// Create a new project collection, given a set of project paths.
+        /// </summary>
+        /// <param name="projectPaths">The set of absolute project paths.</param>
+        /// <param name="logger">A logger for the collection.</param>
+        /// <param name="hostContext">The host context.</param>
+        /// <returns>A new project collection.</returns>
+        public static MsBuildProjectCollection Create(IEnumerable<string> projectPaths, ILogger logger, IHostContext hostContext)
         {
             // Use MSBuild.
             var configOptions = new Dictionary<string, string>
@@ -37,14 +48,13 @@ namespace AutoStep.Extensions.Build
                 { "Configuration", "Debug" },
             };
 
-            return new MsBuildLoadContext(projectPaths, hostContext, logger, configOptions);
+            return new MsBuildProjectCollection(projectPaths, hostContext, logger, configOptions);
         }
 
-        public void Dispose()
-        {
-            projectCollection.Dispose();
-        }
-
+        /// <summary>
+        /// Get the set of all nuget package dependencies across the graph of projects.
+        /// </summary>
+        /// <returns>The package dependencies of the loaded projects.</returns>
         public IEnumerable<PackageDependency> GetAllDependencies()
         {
             var allDeps = new HashSet<PackageDependency>(PackageDependencyComparer.Default);
@@ -57,6 +67,12 @@ namespace AutoStep.Extensions.Build
             return allDeps;
         }
 
+        /// <inheritdoc/>
+        public void Dispose()
+        {
+            projectCollection.Dispose();
+        }
+
         private void VisitProjectForDependencies(ProjectInstance project, HashSet<PackageDependency> dependencies)
         {
             var packages = project.GetItems("PackageReference");
@@ -67,7 +83,8 @@ namespace AutoStep.Extensions.Build
                 var packageVersion = package.GetMetadataValue("Version");
                 var privateAssets = package.GetMetadataValue("PrivateAssets");
 
-                if (privateAssets.Contains("all") || privateAssets.Contains("runtime"))
+                if (privateAssets.Contains("all", StringComparison.InvariantCultureIgnoreCase) ||
+                    privateAssets.Contains("runtime", StringComparison.InvariantCultureIgnoreCase))
                 {
                     // Don't include packages if they won't be copied to the output.
                     continue;
@@ -94,6 +111,10 @@ namespace AutoStep.Extensions.Build
             }
         }
 
+        /// <summary>
+        /// Gets the set of projects in the collection as packages that can be installed.
+        /// </summary>
+        /// <returns>The set of project packages.</returns>
         public IEnumerable<LocalProjectPackage> GetProjectsAsInstallablePackages()
         {
             foreach (var proj in graph.EntryPointNodes)
@@ -122,6 +143,10 @@ namespace AutoStep.Extensions.Build
             }
         }
 
+        /// <summary>
+        /// Build the projects in the collection.
+        /// </summary>
+        /// <returns>An awaitable that on completion will contain true on success, and false on failure.</returns>
         public async ValueTask<bool> Build()
         {
             var success = true;
@@ -136,16 +161,16 @@ namespace AutoStep.Extensions.Build
                     "build",
                     "-v minimal");
 
-                var exitCode = await processRun.Run();
+                var exitCode = await processRun.Run().ConfigureAwait(false);
 
                 if (exitCode == 0)
                 {
-                    logger.LogDebug(processRun.Result);
+                    logger.LogDebug(processRun.Output);
                 }
                 else
                 {
                     success = false;
-                    logger.LogError(processRun.Result);
+                    logger.LogError(processRun.Output);
                 }
             }
 

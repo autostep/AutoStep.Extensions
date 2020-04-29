@@ -12,6 +12,9 @@ namespace AutoStep.Extensions
     /// </summary>
     public class InstalledExtensionPackages
     {
+        /// <summary>
+        /// Gets a singleton 'empty' package set.
+        /// </summary>
         public static InstalledExtensionPackages Empty { get; } = new InstalledExtensionPackages(Array.Empty<IPackageMetadata>());
 
         /// <summary>
@@ -37,6 +40,12 @@ namespace AutoStep.Extensions
             return Packages.Where(x => x.IsTopLevel);
         }
 
+        /// <summary>
+        /// Load the extensions from this set of installed packages.
+        /// </summary>
+        /// <typeparam name="TEntryPoint">The entry point type to search for in the extension assemblies.</typeparam>
+        /// <param name="loggerFactory">A logger factory.</param>
+        /// <returns>A set of loaded extensions.</returns>
         public ILoadedExtensions<TEntryPoint> LoadExtensionsFromPackages<TEntryPoint>(ILoggerFactory loggerFactory)
             where TEntryPoint : IDisposable
         {

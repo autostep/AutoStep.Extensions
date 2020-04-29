@@ -1,81 +1,83 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 
-namespace AutoStep.Extensions.Build
+namespace AutoStep.Extensions.LocalExtensions.Build
 {
     /// <summary>
-    /// Executes a command line tool.
+    /// Executes a command line program and captures the output.
     /// </summary>
     internal class ProcessRun
     {
         private readonly string exeName;
         private readonly string workingDirectory;
         private readonly string[] args;
-
-        private StringBuilder Output { get; set; } = new StringBuilder();
+        private readonly StringBuilder outputBuilder;
 
         /// <summary>
-        /// Get the STDOUT result of the command line process.
+        /// Gets the output of the command line process.
         /// </summary>
-        public string Result => Output.ToString();
-
-        private Dictionary<string, string> EnvironmentVariables { get; } = new Dictionary<string, string>();
+        public string Output => outputBuilder.ToString();
 
         /// <summary>
-        /// Create a new command line executor.
+        /// Initializes a new instance of the <see cref="ProcessRun"/> class.
         /// </summary>
         /// <param name="exeName">The name/path of the exe to run.</param>
-        /// <param name="workingDirectory"></param>
-        /// <param name="args">The command line arguments.</param>
+        /// <param name="workingDirectory">The working directory for the process.</param>
+        /// <param name="args">The set of arguments to the process.</param>
         public ProcessRun(string exeName, string workingDirectory, params string[] args)
         {
             this.exeName = exeName;
             this.workingDirectory = workingDirectory;
             this.args = args;
+            outputBuilder = new StringBuilder();
         }
 
         /// <summary>
         /// Run the tool, returning a wait-able task where the result contains the contents of STDOUT.
         /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation. Result of the task is the exit code of the process.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+            "Design",
+            "CA1031:Do not catch general exception types",
+            Justification = "Want to treat all exceptions from Process.Start as an exit code of 1, with custom message content.")]
         public async Task<int> Run()
         {
-            using var proc = new Process
+            var startInfo = new ProcessStartInfo(exeName)
             {
-                StartInfo =
-                {
-                    FileName = exeName,
-                    WorkingDirectory = workingDirectory,
-                    Arguments = string.Join(" ", args),
-                    RedirectStandardError = true,
-                    RedirectStandardOutput = true,
-                    RedirectStandardInput = true,
-                    UseShellExecute = false,
-                },
+                WorkingDirectory = workingDirectory,
+                RedirectStandardError = true,
+                RedirectStandardOutput = true,
+                RedirectStandardInput = true,
+                UseShellExecute = false,
             };
 
-            foreach (var item in EnvironmentVariables)
+            foreach (var arg in args)
             {
-                proc.StartInfo.EnvironmentVariables.Add(item.Key, item.Value);
+                startInfo.ArgumentList.Add(arg);
             }
+
+            using var proc = new Process
+            {
+                StartInfo = startInfo,
+            };
 
             proc.OutputDataReceived += (sender, eventArgs) =>
             {
                 // Lock access to the output buffer in case there is STDOUT and STDERR at the same time.
-                lock (Output)
+                lock (outputBuilder)
                 {
-                    Output.Append(eventArgs.Data);
+                    outputBuilder.Append(eventArgs.Data);
                 }
             };
 
             proc.ErrorDataReceived += (sender, eventArgs) =>
             {
-                lock (Output)
+                lock (outputBuilder)
                 {
-                    Output.Append(eventArgs.Data);
+                    outputBuilder.Append(eventArgs.Data);
                 }
             };
 
@@ -100,13 +102,13 @@ namespace AutoStep.Extensions.Build
                     return proc.ExitCode;
                 }
 
-                await processExitSource.Task;
+                await processExitSource.Task.ConfigureAwait(false);
 
                 return proc.ExitCode;
             }
             catch (Exception ex)
             {
-                Output.AppendLine($"Failed to launch process: {ex.Message}");
+                outputBuilder.AppendLine(string.Format(CultureInfo.InvariantCulture, BuildMessages.FailedToLaunchProcess, ex.Message));
 
                 return 1;
             }

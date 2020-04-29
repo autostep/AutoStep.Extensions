@@ -27,12 +27,18 @@ namespace AutoStep.Extensions
         string FrameworkName { get; }
 
         /// <summary>
-        /// Tag used to filter the nuget packages that should be checked for an extension entry point.
+        /// Gets a tag used to filter the nuget packages that should be checked for an extension entry point.
         /// </summary>
         string? EntryPointPackageTag { get; }
 
+        /// <summary>
+        /// Gets the project root directory.
+        /// </summary>
         string RootDirectory { get; }
 
+        /// <summary>
+        /// Gets the folder that extensions should be installed in.
+        /// </summary>
         string ExtensionsDirectory { get; }
 
         /// <summary>

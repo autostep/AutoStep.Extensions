@@ -23,11 +23,24 @@ namespace AutoStep.Extensions
         /// Initializes a new instance of the <see cref="HostContext"/> class.
         /// </summary>
         /// <param name="hostAssembly">An assembly indicating the host context.</param>
-        public HostContext(Assembly hostAssembly, string rootDirectory, string? packageInstallDirectory, string? extensionPackageTag)
+        /// <param name="rootDirectory">The root directory of the host project.</param>
+        /// <param name="packageInstallDirectory">The directory to install packages in.</param>
+        /// <param name="extensionPackageTag">An optional extension packages tag.</param>
+        public HostContext(Assembly hostAssembly, string rootDirectory, string packageInstallDirectory, string? extensionPackageTag)
         {
             if (hostAssembly is null)
             {
                 throw new ArgumentNullException(nameof(hostAssembly));
+            }
+
+            if (!Path.IsPathFullyQualified(rootDirectory))
+            {
+                throw new ArgumentException(Messages.HostContext_DirectoryMustBeAbsolute, nameof(rootDirectory));
+            }
+
+            if (!Path.IsPathFullyQualified(packageInstallDirectory))
+            {
+                throw new ArgumentException(Messages.HostContext_DirectoryMustBeAbsolute, nameof(packageInstallDirectory));
             }
 
             hostDependencyContext = DependencyContext.Load(hostAssembly);
@@ -35,6 +48,7 @@ namespace AutoStep.Extensions
             TargetFramework = NuGetFramework.ParseFrameworkName(FrameworkName, DefaultFrameworkNameProvider.Instance);
             frameworkReducer = new FrameworkReducer();
             EntryPointPackageTag = extensionPackageTag;
+
             RootDirectory = rootDirectory;
             ExtensionsDirectory = packageInstallDirectory;
         }
@@ -48,10 +62,13 @@ namespace AutoStep.Extensions
         /// <inheritdoc/>
         public TargetInfo Target => hostDependencyContext.Target;
 
+        /// <inheritdoc/>
         public string? EntryPointPackageTag { get; }
 
+        /// <inheritdoc/>
         public string RootDirectory { get; }
 
+        /// <inheritdoc/>
         public string ExtensionsDirectory { get; }
 
         /// <inheritdoc/>

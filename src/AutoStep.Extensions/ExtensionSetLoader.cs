@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using AutoStep.Extensions.Abstractions;
 using AutoStep.Extensions.NuGetExtensions;
 using Microsoft.Extensions.Logging;
 
@@ -14,7 +13,6 @@ namespace AutoStep.Extensions
     /// </summary>
     public class ExtensionSetLoader
     {
-        private readonly ILoggerFactory loggerFactory;
         private readonly IHostContext hostContext;
         private readonly ILogger<ExtensionSetLoader> logger;
 
@@ -22,16 +20,15 @@ namespace AutoStep.Extensions
         /// Initializes a new instance of the <see cref="ExtensionSetLoader"/> class.
         /// </summary>
         /// <param name="rootDirectory">The root directory of the project.</param>
+        /// <param name="packageInstallDirectory">The directory where installed extension packages should be placed.</param>
         /// <param name="loggerFactory">A logger factory to which the extension load process will write information.</param>
-        /// <param name="extensionPackageTag">An optional package tag to filter the set of packages that will be considered as 'entry points', and therefore implicitly loaded.</param>
+        /// <param name="extensionPackageTag">An optional package tag to filter the set of nuget packages that will be considered as 'entry points', and therefore implicitly loaded.</param>
         public ExtensionSetLoader(string rootDirectory, string packageInstallDirectory, ILoggerFactory loggerFactory, string? extensionPackageTag)
         {
             if (!Path.IsPathFullyQualified(rootDirectory))
             {
                 throw new ArgumentException(Messages.ExtensionSetLoader_ExtensionDirectoryMustBeFullyQualified);
             }
-
-            this.loggerFactory = loggerFactory;
 
             var hostAssembly = typeof(ExtensionSetLoader).Assembly;
 
@@ -85,6 +82,5 @@ namespace AutoStep.Extensions
 
             return compositeResolver.ResolvePackagesAsync(extensionResolveContext, cancelToken);
         }
-
     }
 }

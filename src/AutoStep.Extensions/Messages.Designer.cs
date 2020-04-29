@@ -223,6 +223,24 @@ namespace AutoStep.Extensions {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Provided directory must be an absolute path..
+        /// </summary>
+        internal static string HostContext_DirectoryMustBeAbsolute {
+            get {
+                return ResourceManager.GetString("HostContext_DirectoryMustBeAbsolute", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot install an invalid package set..
+        /// </summary>
+        internal static string InvalidPackageResolver_CannotInstallInvalidSet {
+            get {
+                return ResourceManager.GetString("InvalidPackageResolver_CannotInstallInvalidSet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot load the entry point for the {0} extension. Extension entry points must be assignable to {1}, and have a public constructor with only ILoggerFactory (optionally) as a constructor argument..
         /// </summary>
         internal static string LoadedExtensions_CannotLoadEntryPoint {

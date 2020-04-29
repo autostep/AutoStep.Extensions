@@ -22,14 +22,14 @@ namespace AutoStep.Extensions.LocalExtensions.Build {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class BuildStrings {
+    internal class BuildMessages {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
         private static global::System.Globalization.CultureInfo resourceCulture;
         
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        internal BuildStrings() {
+        internal BuildMessages() {
         }
         
         /// <summary>
@@ -39,7 +39,7 @@ namespace AutoStep.Extensions.LocalExtensions.Build {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("AutoStep.Extensions.LocalExtensions.Build.BuildStrings", typeof(BuildStrings).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("AutoStep.Extensions.LocalExtensions.Build.BuildMessages", typeof(BuildMessages).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -61,29 +61,11 @@ namespace AutoStep.Extensions.LocalExtensions.Build {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Build failed..
+        ///   Looks up a localized string similar to Failed to launch process: {ex.Message}.
         /// </summary>
-        internal static string BuildFailed {
+        internal static string FailedToLaunchProcess {
             get {
-                return ResourceManager.GetString("BuildFailed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Build Started..
-        /// </summary>
-        internal static string BuildStarted {
-            get {
-                return ResourceManager.GetString("BuildStarted", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Build succeeded..
-        /// </summary>
-        internal static string BuildSucceeded {
-            get {
-                return ResourceManager.GetString("BuildSucceeded", resourceCulture);
+                return ResourceManager.GetString("FailedToLaunchProcess", resourceCulture);
             }
         }
     }

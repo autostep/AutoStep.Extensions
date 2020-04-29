@@ -50,7 +50,7 @@ namespace AutoStep.Extensions
         /// </summary>
         private class CustomPackageSourceProvider : IPackageSourceProvider
         {
-            private List<PackageSource> sourceList;
+            private readonly List<PackageSource> sourceList;
 
             public string ActivePackageSourceName => sourceList.LastOrDefault().Name;
 

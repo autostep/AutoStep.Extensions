@@ -17,9 +17,9 @@
     <PackageTags>testing, gherkin</PackageTags>
     <PackageIcon>nuget-icon.png</PackageIcon>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>    
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <None Include="..\..\build\nuget-icon.png">
       <Pack>True</Pack>
@@ -29,17 +29,24 @@
   
   <ItemGroup>
     <PackageReference Include="AutoStep" Version="1.0.0-develop.297" />
+
+    <!-- 
+    MSB3277 ' warning codes are raised during MSBuild evaluation
+    There are three reference conflicts that currently occur, simply due to the presence of the MSBuild package,
+    which isn't copied at runtime:
+      - Microsoft.Win32.Registry
+      - System.Security.Cryptography.ProtectedData
+      - System.Security.Principal.Windows.
+    These warnings are not considered actual problems with the build (and can't be resolved with the nuget packages available).
+    --> 
+
     <PackageReference Include="Microsoft.Build" Version="16.5.0">
       <ExcludeAssets>runtime</ExcludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Build.Framework" Version="16.5.0">
-      <ExcludeAssets>runtime</ExcludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
     <PackageReference Include="Microsoft.Build.Locator" Version="1.2.6" />
-    <PackageReference Include="NuGet.Protocol" Version="5.5.0" />
-    <PackageReference Include="NuGet.Resolver" Version="5.5.0" />
+    <PackageReference Include="NuGet.Protocol" Version="5.5.1" />
+    <PackageReference Include="NuGet.Resolver" Version="5.5.1" />
     <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="3.1.3" />
     <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.8">
       <PrivateAssets>all</PrivateAssets>
@@ -50,7 +57,10 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <!-- Need a reference to netstandard in case plugin libraries use it -->
-    <PackageReference Include="NETStandard.Library" Version="2.0.3" />
+    <PackageReference Include="NETStandard.Library" Version="2.0.3">
+      <IncludeAssets>runtime</IncludeAssets>
+    </PackageReference>
+    
   </ItemGroup>
   
   <ItemGroup>
@@ -62,10 +72,20 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="LocalExtensions\Build\BuildMessages.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>BuildMessages.resx</DependentUpon>
+    </Compile>
     <Compile Update="LocalExtensions\Build\BuildStrings.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
       <DependentUpon>BuildStrings.resx</DependentUpon>
+    </Compile>
+    <Compile Update="LocalExtensions\LocalExtensionResolverMessages.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>LocalExtensionResolverMessages.resx</DependentUpon>
     </Compile>
     <Compile Update="Messages.Designer.cs">
       <DesignTime>True</DesignTime>
@@ -75,9 +95,17 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Update="LocalExtensions\Build\BuildMessages.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>BuildMessages.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <EmbeddedResource Update="LocalExtensions\Build\BuildStrings.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>BuildStrings.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="LocalExtensions\LocalExtensionResolverMessages.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>LocalExtensionResolverMessages.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Update="Messages.resx">
       <Generator>ResXFileCodeGenerator</Generator>

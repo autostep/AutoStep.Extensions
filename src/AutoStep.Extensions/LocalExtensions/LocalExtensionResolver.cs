@@ -2,35 +2,43 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.Loader;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoStep.Extensions.Build;
 using AutoStep.Extensions.LocalExtensions;
 using AutoStep.Extensions.LocalExtensions.Build;
-using AutoStep.Projects;
 using Microsoft.Extensions.Logging;
-using NuGet.Packaging.Core;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace AutoStep.Extensions
 {
+    /// <summary>
+    /// Implements the resolver for finding and resolving (building) local MSBuild projects.
+    /// </summary>
     internal class LocalExtensionResolver : IExtensionPackagesResolver
     {
-        private IHostContext hostContext;
-        private ILogger logger;
-
         private static readonly IReadOnlyList<string> SupportedProjectExtensions = new[]
         {
-            ".csproj", ".vbproj", ".fsproj"
+            ".csproj",
+            ".vbproj",
+            ".fsproj",
         };
 
+        private readonly IHostContext hostContext;
+        private readonly ILogger logger;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LocalExtensionResolver"/> class.
+        /// </summary>
+        /// <param name="hostContext">The host context.</param>
+        /// <param name="logger">A logger.</param>
         public LocalExtensionResolver(IHostContext hostContext, ILogger logger)
         {
             this.hostContext = hostContext;
             this.logger = logger;
         }
 
+        /// <inheritdoc/>
         public async ValueTask<IInstallablePackageSet> ResolvePackagesAsync(ExtensionResolveContext resolveContext, CancellationToken cancelToken)
         {
             if (!resolveContext.FolderExtensions.Any())
@@ -42,6 +50,7 @@ namespace AutoStep.Extensions
             var projectFilePaths = new List<string>();
             var isValid = true;
 
+            // Locate the project paths for each configured folder.
             foreach (var folder in resolveContext.FolderExtensions)
             {
                 string? projectPath = ResolveProjectPath(folder);
@@ -60,11 +69,11 @@ namespace AutoStep.Extensions
             {
                 try
                 {
-                    logger.LogInformation("Building Local Projects.");
+                    logger.LogInformation(LocalExtensionResolverMessages.BuildingProjects);
 
                     MsBuildLibraryLoader.EnsureLoaded();
 
-                    using var msBuildContext = MsBuildLoadContext.Create(projectFilePaths, logger, hostContext);
+                    using var msBuildContext = MsBuildProjectCollection.Create(projectFilePaths, logger, hostContext);
 
                     var allDeps = msBuildContext.GetAllDependencies();
 
@@ -75,7 +84,7 @@ namespace AutoStep.Extensions
                     {
                         resolveContext.AdditionalPackagesRequired.AddRange(allDeps);
 
-                        logger.LogInformation("Local Projects Built Successfully.");
+                        logger.LogInformation(LocalExtensionResolverMessages.ProjectsBuiltOk);
 
                         var output = msBuildContext.GetProjectsAsInstallablePackages().ToList();
 
@@ -83,7 +92,7 @@ namespace AutoStep.Extensions
                     }
                     else
                     {
-                        throw new ExtensionLoadException("One of more of the configured local projects could not be built, so we cannot continue.");
+                        throw new ExtensionLoadException(LocalExtensionResolverMessages.BuildFailure);
                     }
                 }
                 catch (ExtensionLoadException ex)
@@ -93,7 +102,7 @@ namespace AutoStep.Extensions
                 catch (InvalidOperationException)
                 {
                     // Could not find MSBuild.
-                    return new InvalidPackageSet(new ExtensionLoadException("Could not find an installed dotnet SDK on this machine. Using folder extensions with code requires the dotnet SDK."));
+                    return new InvalidPackageSet(new ExtensionLoadException(LocalExtensionResolverMessages.NoSDK));
                 }
             }
             else
@@ -106,7 +115,7 @@ namespace AutoStep.Extensions
         {
             if (folder.Folder is null)
             {
-                logger.LogError("No folder provided for configured local extension.");
+                logger.LogError(LocalExtensionResolverMessages.NoFolderProvided);
 
                 return null;
             }
@@ -127,18 +136,18 @@ namespace AutoStep.Extensions
 
                 if (projectFile is object)
                 {
-                    logger.LogDebug("Including .NET Project File '{0}' as a local extension.", projectFile.FullName);
+                    logger.LogDebug(LocalExtensionResolverMessages.IncludingProjectFile, projectFile.FullName);
 
                     return projectFile.FullName;
                 }
                 else
                 {
-                    logger.LogError("Configured extension folder '{0}' does not contain a .NET project file.");
+                    logger.LogError(LocalExtensionResolverMessages.FolderDoesNotHaveAProjectFile, directoryInfo.FullName);
                 }
             }
             else
             {
-                logger.LogError("Configured extension folder '{0}' does not exist.", directory);
+                logger.LogError(LocalExtensionResolverMessages.ExtensionFolderDoesNotExist, directory);
             }
 
             return null;

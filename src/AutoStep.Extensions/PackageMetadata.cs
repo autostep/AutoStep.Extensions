@@ -46,21 +46,16 @@ namespace AutoStep.Extensions
         /// <inheritdoc/>
         public string PackageVersion { get; }
 
-        /// <summary>
-        /// Gets the set of available DLL files.
-        /// </summary>
+        /// <inheritdoc/>
         public IReadOnlyList<string> LibFiles { get; }
 
-        /// <summary>
-        /// Gets the relative path to an optional entry point assembly for the package.
-        /// </summary>
+        /// <inheritdoc/>
         public string? EntryPoint { get; }
 
-        /// <summary>
-        /// Gets a value indicating whether the specified package is a top-level dependency (as opposed to a nested chain dependency).
-        /// </summary>
+        /// <inheritdoc/>
         public bool IsTopLevel { get; }
 
+        /// <inheritdoc/>
         public IEnumerable<string> Dependencies { get; }
     }
 }

@@ -37,6 +37,9 @@ namespace AutoStep.Extensions
         /// </summary>
         bool IsTopLevel { get; }
 
+        /// <summary>
+        /// Gets the set of dependent package IDs.
+        /// </summary>
         IEnumerable<string> Dependencies { get; }
     }
 }
