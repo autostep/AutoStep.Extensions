@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace AutoStep.Extensions.Build {
+namespace AutoStep.Extensions.LocalExtensions.Build {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace AutoStep.Extensions.Build {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("AutoStep.Extensions.Build.BuildStrings", typeof(BuildStrings).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("AutoStep.Extensions.LocalExtensions.Build.BuildStrings", typeof(BuildStrings).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;

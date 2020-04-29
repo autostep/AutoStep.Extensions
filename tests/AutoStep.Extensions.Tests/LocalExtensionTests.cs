@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using AutoStep.Extensions.Tests.Utils;
+using FluentAssertions;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -21,20 +24,32 @@ namespace AutoStep.Extensions.Tests
             using var context = GetExtensionTestContext(nameof(CanLoadLocalExtensionWithDependency), @"
             {
                 ""localExtensions"": [
-                    { ""folder"" : ""LocalExtension"", ""Name"": ""LocalExtension"" }
+                    { ""folder"": ""LocalExtension"" }
                 ]
-            }");
+            }", includeNuGet: true);
 
-            //var setLoader = new ExtensionSetLoader(context.RootDirectory, context.FolderExtensionDir, LogFactory, "autostep");
+            var setLoader = new ExtensionSetLoader(context.RootDirectory, context.PackageInstallDirectory, LogFactory, "autostep");
 
-            //using (var set = await setLoader.ResolveExtensionsAsync<IExtensionEntryPoint>(
-            //    context.Sources,
-            //    context.Extensions,
-            //    context.FolderExtensions,
-            //    false,
-            //    CancellationToken.None))
-            //{
-            //}
+            var resolvedPackages = await setLoader.ResolveExtensionsAsync(
+                context.Sources,
+                context.Extensions,
+                context.FolderExtensions,
+                false,
+                CancellationToken.None);
+
+            resolvedPackages.IsValid.Should().BeTrue();
+
+            var installedSet = await resolvedPackages.InstallAsync(CancellationToken.None);
+
+            using (var loadedExtensions = installedSet.LoadExtensionsFromPackages<IExtensionEntryPoint>(LogFactory))
+            {
+                loadedExtensions.Packages.Should().HaveCount(3);
+                loadedExtensions.Packages.Select(x => x.PackageId).Should().Contain("Newtonsoft.Json", "Serilog", "LocalExtension");
+
+                loadedExtensions.ExtensionEntryPoints.Should().HaveCount(1);
+
+                AttachToDummyProject(loadedExtensions, context.Configuration);
+            }
         }
     }
 }

@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoStep.Extensions.Abstractions;
+using AutoStep.Extensions.Tests.Utils;
 using AutoStep.Projects;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
@@ -32,7 +33,7 @@ namespace AutoStep.Extensions.Tests
                 ]
             }");
 
-            var setLoader = new ExtensionSetLoader(context.RootDirectory, LogFactory, "autostep");
+            var setLoader = new ExtensionSetLoader(context.RootDirectory, context.PackageInstallDirectory, LogFactory, "autostep");
 
             var resolvedPackages = await setLoader.ResolveExtensionsAsync(
                 context.Sources,
@@ -65,7 +66,7 @@ namespace AutoStep.Extensions.Tests
                 ]
             }", includeNuGet: true);
 
-            var setLoader = new ExtensionSetLoader(context.RootDirectory, LogFactory, "autostep");
+            var setLoader = new ExtensionSetLoader(context.RootDirectory, context.PackageInstallDirectory, LogFactory, "autostep");
 
             var resolvedPackages = await setLoader.ResolveExtensionsAsync(
                 context.Sources,
@@ -99,7 +100,7 @@ namespace AutoStep.Extensions.Tests
                 ]
             }");
 
-            var setLoader = new ExtensionSetLoader(context.RootDirectory, LogFactory, "autostep");
+            var setLoader = new ExtensionSetLoader(context.RootDirectory, context.PackageInstallDirectory, LogFactory, "autostep");
 
             var resolvedPackages = await setLoader.ResolveExtensionsAsync(
                 context.Sources,
@@ -141,16 +142,6 @@ namespace AutoStep.Extensions.Tests
                 loadedExtensions.Packages.First().PackageVersion.Should().Be("1.0.0-alpha-1");
 
                 File.Exists(loadedExtensions.GetPackagePath("TestExtension1", "lib", "netstandard2.1", "TestExtension1.dll")).Should().BeTrue();
-            }
-        }
-
-
-        private void AttachToDummyProject(ILoadedExtensions<IExtensionEntryPoint> set, IConfiguration config)
-        {
-            var proj = new Project();
-            foreach (var entryPoint in set.ExtensionEntryPoints)
-            {
-                entryPoint.AttachToProject(config, proj);
             }
         }
     }

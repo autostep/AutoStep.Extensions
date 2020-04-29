@@ -9,7 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace TestExtensionReferencesNewtonSoft
+namespace LocalExtension
 {
     public class TestEntryPoint : IExtensionEntryPoint
     {

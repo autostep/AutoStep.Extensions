@@ -31,7 +31,7 @@ namespace AutoStep.Extensions.NuGetExtensions
             this.logger = logger;
         }
 
-        public async ValueTask<IInstallablePackageSet> ResolvePackagesAsync(IEnumerable<PackageExtensionConfiguration> extensions, CancellationToken cancelToken)
+        public async ValueTask<IInstallablePackageSet> ResolvePackagesAsync(ExtensionResolveContext resolveContext, CancellationToken cancelToken)
         {
             // Take a lock on the dependency file.
             if (!noCache && File.Exists(dependencyJsonFile))
@@ -43,7 +43,7 @@ namespace AutoStep.Extensions.NuGetExtensions
                 {
                     var cachedLoader = new CachedPackagesResolver(hostContext, cacheDepCtxt, logger);
 
-                    var cachedPackages = await cachedLoader.ResolvePackagesAsync(extensions, cancelToken).ConfigureAwait(false);
+                    var cachedPackages = await cachedLoader.ResolvePackagesAsync(resolveContext, cancelToken).ConfigureAwait(false);
 
                     if (cachedPackages.IsValid)
                     {
@@ -54,7 +54,7 @@ namespace AutoStep.Extensions.NuGetExtensions
 
             var nugetResolver = new NugetPackagesResolver(sourceSettings, hostContext, noCache, logger);
 
-            var nugetLoadedPackages = await nugetResolver.ResolvePackagesAsync(extensions, cancelToken).ConfigureAwait(false);
+            var nugetLoadedPackages = await nugetResolver.ResolvePackagesAsync(resolveContext, cancelToken).ConfigureAwait(false);
 
             if (!nugetLoadedPackages.IsValid)
             {
@@ -62,7 +62,7 @@ namespace AutoStep.Extensions.NuGetExtensions
             }
 
             // Wrap the package set with one that updates the package cache.
-            return new CacheOnInstallPackageSet(dependencyJsonFile, hostContext, extensions, nugetLoadedPackages);
+            return new CacheOnInstallPackageSet(dependencyJsonFile, hostContext, resolveContext, nugetLoadedPackages);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage(

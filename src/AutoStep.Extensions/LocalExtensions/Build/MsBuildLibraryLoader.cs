@@ -5,15 +5,14 @@ using System.Text;
 using Microsoft.Build.Locator;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace AutoStep.Extensions.Build
+namespace AutoStep.Extensions.LocalExtensions.Build
 {
     public class MsBuildLibraryLoader
     {
         private static readonly object sync = new object();
         private static bool isLoaded;
-        private static VisualStudioInstance vsInstance;
 
-        public static string GetMsBuildPath()
+        public static void EnsureLoaded()
         {
             if (!isLoaded)
             {
@@ -21,12 +20,10 @@ namespace AutoStep.Extensions.Build
                 {
                     if (!isLoaded)
                     {
-                        vsInstance = MSBuildLocator.RegisterDefaults();
+                        MSBuildLocator.RegisterDefaults();
                     }
                 }
             }
-
-            return vsInstance.MSBuildPath;
         }
     }
 }

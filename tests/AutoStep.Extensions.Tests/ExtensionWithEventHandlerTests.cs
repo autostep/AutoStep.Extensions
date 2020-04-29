@@ -9,6 +9,7 @@ using AutoStep.Execution;
 using AutoStep.Execution.Contexts;
 using AutoStep.Execution.Events;
 using AutoStep.Extensions.Abstractions;
+using AutoStep.Extensions.Tests.Utils;
 using AutoStep.Language;
 using AutoStep.Language.Test;
 using AutoStep.Projects;
@@ -34,7 +35,7 @@ namespace AutoStep.Extensions.Tests
                 ]
             }");
 
-            var setLoader = new ExtensionSetLoader(context.RootDirectory, LogFactory, "autostep");
+            var setLoader = new ExtensionSetLoader(context.RootDirectory, context.PackageInstallDirectory, LogFactory, "autostep");
 
             var resolvedPackages = await setLoader.ResolveExtensionsAsync(
                 context.Sources,

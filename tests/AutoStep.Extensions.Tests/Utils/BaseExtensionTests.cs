@@ -4,13 +4,13 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using AutoStep.Extensions.NuGetExtensions;
-using AutoStep.Extensions.Tests.Utils;
+using AutoStep.Extensions.Abstractions;
+using AutoStep.Projects;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Xunit.Abstractions;
 
-namespace AutoStep.Extensions.Tests
+namespace AutoStep.Extensions.Tests.Utils
 {
     public abstract class BaseExtensionTests
     {
@@ -25,14 +25,14 @@ namespace AutoStep.Extensions.Tests
         {
             public ExtensionTestContext(
                 string rootDirectory,
-                string folderExtensionBaseDirectory,
+                string packageInstallDir,
                 IConfiguration configuration,
                 ISourceSettings sources,
                 IEnumerable<PackageExtensionConfiguration> extensions,
                 IEnumerable<FolderExtensionConfiguration> folderExtensions)
             {
                 RootDirectory = rootDirectory;
-                FolderExtensionDir = folderExtensionBaseDirectory;
+                PackageInstallDirectory = packageInstallDir;
                 Configuration = configuration;
                 Sources = sources;
                 Extensions = extensions;
@@ -43,19 +43,19 @@ namespace AutoStep.Extensions.Tests
 
             public IConfiguration Configuration { get; }
 
-            public ISourceSettings Sources { get;  }
+            public ISourceSettings Sources { get; }
 
             public IEnumerable<PackageExtensionConfiguration> Extensions { get; }
 
             public IEnumerable<FolderExtensionConfiguration> FolderExtensions { get; }
 
-            public string FolderExtensionDir { get; internal set; }
+            public string PackageInstallDirectory { get; internal set; }
 
             public void Dispose()
             {
-                if (Directory.Exists(RootDirectory))
+                if (Directory.Exists(PackageInstallDirectory))
                 {
-                    Directory.Delete(RootDirectory, true);
+                    Directory.Delete(PackageInstallDirectory, true);
                 }
             }
         }
@@ -68,12 +68,10 @@ namespace AutoStep.Extensions.Tests
             var relativePathToTestPackages = "../../../../../artifacts/testpackages";
             var relativePathToTestProjects = "../../../../../tests";
 
+            var effectiveRootFolder = Path.GetFullPath(relativePathToTestProjects, assemblyDirectory!);
+
             var packagesFullPath = Path.GetFullPath(relativePathToTestPackages, assemblyDirectory!);
-            var testProjectsFullPath = Path.GetFullPath(relativePathToTestProjects, assemblyDirectory!);
-
             var nugetFileUri = new Uri("file://" + packagesFullPath);
-
-            var testRootDirectory = Path.Combine(assemblyDirectory!, "testdirs", nameof(ExtensionResolveTests), testName);
 
             var configuration = new ConfigurationBuilder();
 
@@ -83,7 +81,7 @@ namespace AutoStep.Extensions.Tests
 
             var config = configuration.Build();
 
-            var sourceData = new SourceSettings(testRootDirectory);
+            var sourceData = new SourceSettings(effectiveRootFolder);
 
             if (includeNuGet)
             {
@@ -94,11 +92,21 @@ namespace AutoStep.Extensions.Tests
                 sourceData.ReplaceCustomSources(new[] { nugetFileUri.AbsoluteUri });
             }
 
+            var packageInstallDirectory = Path.Combine(assemblyDirectory!, "testdirs", nameof(ExtensionResolveTests), testName);
+
             var extensions = config.GetSection("extensions").Get<PackageExtensionConfiguration[]>() ?? Enumerable.Empty<PackageExtensionConfiguration>();
             var folderExtensions = config.GetSection("localExtensions").Get<FolderExtensionConfiguration[]>() ?? Enumerable.Empty<FolderExtensionConfiguration>();
 
-            return new ExtensionTestContext(testRootDirectory, testProjectsFullPath, config, sourceData, extensions, folderExtensions);
+            return new ExtensionTestContext(effectiveRootFolder, packageInstallDirectory, config, sourceData, extensions, folderExtensions);
         }
 
+        protected void AttachToDummyProject(ILoadedExtensions<IExtensionEntryPoint> set, IConfiguration config)
+        {
+            var proj = new Project();
+            foreach (var entryPoint in set.ExtensionEntryPoints)
+            {
+                entryPoint.AttachToProject(config, proj);
+            }
+        }
     }
 }

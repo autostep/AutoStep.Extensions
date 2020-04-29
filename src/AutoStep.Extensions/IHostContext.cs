@@ -31,6 +31,8 @@ namespace AutoStep.Extensions
         /// </summary>
         string? EntryPointPackageTag { get; }
 
+        string RootDirectory { get; }
+
         string ExtensionsDirectory { get; }
 
         /// <summary>

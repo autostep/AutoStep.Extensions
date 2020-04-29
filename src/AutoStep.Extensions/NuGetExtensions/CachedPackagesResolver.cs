@@ -11,7 +11,7 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 
-namespace AutoStep.Extensions
+namespace AutoStep.Extensions.NuGetExtensions
 {
     internal class CachedPackagesResolver : IExtensionPackagesResolver
     {
@@ -26,32 +26,32 @@ namespace AutoStep.Extensions
             this.logger = logger;
         }
 
-        public async ValueTask<IInstallablePackageSet> ResolvePackagesAsync(IEnumerable<PackageExtensionConfiguration> configuredExtensions, CancellationToken cancelToken)
+        public async ValueTask<IInstallablePackageSet> ResolvePackagesAsync(ExtensionResolveContext resolveContext, CancellationToken cancelToken)
         {
-            logger.LogDebug(Messages.CachedPackagesLoader_CacheExistsVerifying);
+            logger.LogDebug(Messages.CachedPackagesResolver_CacheExistsVerifying);
 
-            var cacheValid = ValidateRootPackages(configuredExtensions);
+            var cacheValid = ValidateRootPackages(resolveContext);
 
             if (cacheValid)
             {
-                logger.LogDebug(Messages.CachedPackagesLoader_RootPackagesValid);
+                logger.LogDebug(Messages.CachedPackagesResolver_RootPackagesValid);
 
                 // Now we need to validate the files and build the package set.
                 var packageSet = await LoadPackageSet(cancelToken).ConfigureAwait(false);
 
                 if (packageSet is object)
                 {
-                    logger.LogDebug(Messages.CachedPackagesLoader_CacheValid);
+                    logger.LogDebug(Messages.CachedPackagesResolver_CacheValid);
                     return new CachedInstallablePackagesSet(new InstalledExtensionPackages(packageSet));
                 }
                 else
                 {
-                    logger.LogDebug(Messages.CachedPackagesLoader_NotAllFilesAvailable);
+                    logger.LogDebug(Messages.CachedPackagesResolver_NotAllFilesAvailable);
                 }
             }
             else
             {
-                logger.LogDebug(Messages.CachedPackagesLoader_RootPackagesNotValid);
+                logger.LogDebug(Messages.CachedPackagesResolver_RootPackagesNotValid);
             }
 
             // Return an invalid package set.
@@ -66,12 +66,28 @@ namespace AutoStep.Extensions
         /// If an explicit version is set in the extensions config, and that version is no longer met by
         /// the version in the cache, then we will also go again.
         /// </summary>
-        private bool ValidateRootPackages(IEnumerable<PackageExtensionConfiguration> extensions)
+        private bool ValidateRootPackages(ExtensionResolveContext resolveContext)
         {
             var rootRuntimeLibraries = knownCache.RuntimeLibraries.Where(x => x.Type == ExtensionRuntimeLibraryTypes.RootPackage).ToDictionary(x => x.Name);
             var isValid = true;
 
-            foreach (var extConfig in extensions)
+            isValid = ProcessExtensionPackages(resolveContext, rootRuntimeLibraries) &&
+                      ProcessAdditionalPackages(resolveContext, knownCache.RuntimeLibraries);
+
+            foreach (var extraRootPackage in rootRuntimeLibraries)
+            {
+                logger.LogDebug(Messages.CachedPackagesResolver_DependencyCacheContainsUnrequiredPackage, extraRootPackage.Key);
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        private bool ProcessExtensionPackages(ExtensionResolveContext resolveContext, Dictionary<string, RuntimeLibrary> rootRuntimeLibraries)
+        {
+            var isValid = true;
+
+            foreach (var extConfig in resolveContext.PackageExtensions)
             {
                 if (string.IsNullOrWhiteSpace(extConfig.Package))
                 {
@@ -94,45 +110,81 @@ namespace AutoStep.Extensions
                                 if (!range.Satisfies(parsedCacheVersion))
                                 {
                                     // Range not satisfied.
-                                    logger.LogDebug(Messages.CachedPackagesLoader_ConfiguredVersionNotCompatibleWithCache, extConfig.Package, extConfig.Version, lib.Version);
+                                    logger.LogDebug(Messages.CachedPackagesResolver_ConfiguredExtensionVersionNotCompatibleWithCache, extConfig.Package, extConfig.Version, lib.Version);
                                     isValid = false;
                                 }
                             }
                             else
                             {
-                                throw new ExtensionLoadException(string.Format(CultureInfo.CurrentCulture, Messages.CachedPackagesLoader_InvalidExtensionVersionRange, extConfig.Package));
+                                throw new ExtensionLoadException(string.Format(CultureInfo.CurrentCulture, Messages.CachedPackagesResolver_InvalidExtensionVersionRange, extConfig.Package));
                             }
                         }
 
                         if (extConfig.PreRelease == false && parsedCacheVersion.IsPrerelease)
                         {
                             // Pre-releases no longer allowed.
-                            logger.LogDebug(Messages.CachedPackagesLoader_PreReleaseInCacheNotAllowed, extConfig.Package);
+                            logger.LogDebug(Messages.CachedPackagesResolver_PreReleaseInCacheNotAllowed, extConfig.Package);
                             isValid = false;
                         }
                     }
                     else
                     {
-                        logger.LogDebug(Messages.CachedPackagesLoader_BadVersionInDependencyCache, extConfig.Package);
+                        logger.LogDebug(Messages.CachedPackagesResolver_BadVersionInDependencyCache, extConfig.Package);
                         isValid = false;
                     }
                 }
                 else
                 {
-                    logger.LogDebug(Messages.CachedPackagesLoader_NoEntryInDependencyCache, extConfig.Package);
+                    logger.LogDebug(Messages.CachedPackagesResolver_NoEntryInDependencyCache, extConfig.Package);
                     isValid = false;
                 }
 
                 if (isValid)
                 {
-                    logger.LogDebug(Messages.CachedPackagesLoader_CachedExtensionInfoIsValid, extConfig.Package);
+                    logger.LogDebug(Messages.CachedPackagesResolver_CachedExtensionInfoIsValid, extConfig.Package);
                 }
             }
 
-            foreach (var extraRootPackage in rootRuntimeLibraries)
+            return isValid;
+        }
+
+        private bool ProcessAdditionalPackages(ExtensionResolveContext resolveContext, IReadOnlyList<RuntimeLibrary> runtimeLibraries)
+        {
+            var isValid = true;
+
+            foreach (var dependency in resolveContext.AdditionalPackagesRequired)
             {
-                logger.LogDebug(Messages.CachedPackagesLoader_DependencyCacheContainsUnrequiredPackage, extraRootPackage.Key);
-                isValid = false;
+                var foundLib = runtimeLibraries.FirstOrDefault(x => x.Name == dependency.Id);
+
+                // Look for a runtime library.
+                if (foundLib is object)
+                {
+                    // Ok, so we have a cached entry; is it the right version?
+                    if (NuGetVersion.TryParse(foundLib.Version, out var parsedCacheVersion))
+                    {
+                        if (!dependency.VersionRange.Satisfies(parsedCacheVersion))
+                        {
+                            // Range not satisfied.
+                            logger.LogDebug(Messages.CachedPackagesResolver_AdditionalDependencyVersionNotCompatibleWithCache, dependency.Id, dependency.VersionRange.ToString(), foundLib.Version);
+                            isValid = false;
+                        }
+                    }
+                    else
+                    {
+                        logger.LogDebug(Messages.CachedPackagesResolver_BadVersionInDependencyCache, dependency.Id);
+                        isValid = false;
+                    }
+                }
+                else
+                {
+                    logger.LogDebug(Messages.CachedPackagesResolver_NoEntryInDependencyCache, dependency.Id);
+                    isValid = false;
+                }
+
+                if (isValid)
+                {
+                    logger.LogDebug(Messages.CachedPackagesResolver_CachedAdditionalDepIsValid, dependency.Id);
+                }
             }
 
             return isValid;
@@ -166,7 +218,7 @@ namespace AutoStep.Extensions
                         if (!libFiles.Contains(cachedFile))
                         {
                             // Cached file not present in folder, corrupt package folder most likely.
-                            logger.LogDebug(Messages.CachedPackagesLoader_CannotFindLibraryFile, cachedFile, packageId);
+                            logger.LogDebug(Messages.CachedPackagesResolver_CannotFindLibraryFile, cachedFile, packageId);
                             isValid = false;
                         }
                     }
@@ -190,7 +242,7 @@ namespace AutoStep.Extensions
                 }
                 else
                 {
-                    logger.LogDebug(Messages.CachedPackagesLoader_PackageDirectoryDoesNotExist, runtimeLib.Path);
+                    logger.LogDebug(Messages.CachedPackagesResolver_PackageDirectoryDoesNotExist, runtimeLib.Path);
                     isValid = false;
                 }
             }

@@ -21,12 +21,12 @@ namespace AutoStep.Extensions
         /// <summary>
         /// Initializes a new instance of the <see cref="ExtensionSetLoader"/> class.
         /// </summary>
-        /// <param name="packageExtensionsDirectory">The directory that should contain all extension-related packages and files.</param>
+        /// <param name="rootDirectory">The root directory of the project.</param>
         /// <param name="loggerFactory">A logger factory to which the extension load process will write information.</param>
         /// <param name="extensionPackageTag">An optional package tag to filter the set of packages that will be considered as 'entry points', and therefore implicitly loaded.</param>
-        public ExtensionSetLoader(string packageExtensionsDirectory, ILoggerFactory loggerFactory, string? extensionPackageTag)
+        public ExtensionSetLoader(string rootDirectory, string packageInstallDirectory, ILoggerFactory loggerFactory, string? extensionPackageTag)
         {
-            if (!Path.IsPathFullyQualified(packageExtensionsDirectory))
+            if (!Path.IsPathFullyQualified(rootDirectory))
             {
                 throw new ArgumentException(Messages.ExtensionSetLoader_ExtensionDirectoryMustBeFullyQualified);
             }
@@ -36,7 +36,7 @@ namespace AutoStep.Extensions
             var hostAssembly = typeof(ExtensionSetLoader).Assembly;
 
             // Need the dependency context for the host assembly, create a host context from that.
-            hostContext = new HostContext(hostAssembly, packageExtensionsDirectory, extensionPackageTag);
+            hostContext = new HostContext(hostAssembly, rootDirectory, packageInstallDirectory, extensionPackageTag);
 
             logger = loggerFactory.CreateLogger<ExtensionSetLoader>();
         }
@@ -77,9 +77,13 @@ namespace AutoStep.Extensions
 
             // Create composite resolver.
             var compositeResolver = new CompositeExtensionResolver(
+                new LocalExtensionResolver(hostContext, logger),
                 new NugetFallbackPackageResolver(sourceSettings, hostContext, noCache, logger));
 
-            return compositeResolver.ResolvePackagesAsync(packageExtensions, cancelToken);
+            // Context object for the resolve operation.
+            var extensionResolveContext = new ExtensionResolveContext(packageExtensions, localExtensions);
+
+            return compositeResolver.ResolvePackagesAsync(extensionResolveContext, cancelToken);
         }
 
     }

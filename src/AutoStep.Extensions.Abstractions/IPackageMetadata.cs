@@ -2,13 +2,6 @@
 
 namespace AutoStep.Extensions
 {
-    public interface IPackageDependency
-    {
-        string PackageId { get; }
-
-        string PackageVersion { get; }
-    }
-
     /// <summary>
     /// Defines available metadata for a package.
     /// </summary>

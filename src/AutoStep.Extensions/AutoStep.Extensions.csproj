@@ -25,9 +25,6 @@
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
-    <None Include="Build\containerproj.csproj">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
   
   <ItemGroup>
@@ -65,7 +62,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Build\BuildStrings.Designer.cs">
+    <Compile Update="LocalExtensions\Build\BuildStrings.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
       <DependentUpon>BuildStrings.resx</DependentUpon>
@@ -78,7 +75,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Update="Build\BuildStrings.resx">
+    <EmbeddedResource Update="LocalExtensions\Build\BuildStrings.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>BuildStrings.Designer.cs</LastGenOutput>
     </EmbeddedResource>

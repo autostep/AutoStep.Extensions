@@ -11,7 +11,7 @@ using NuGet.Packaging;
 using NuGet.Packaging.Signing;
 using NuGet.Protocol.Core.Types;
 
-namespace AutoStep.Extensions
+namespace AutoStep.Extensions.NuGetExtensions
 {
     internal class NugetInstallablePackageSet : IInstallablePackageSet
     {
@@ -38,7 +38,7 @@ namespace AutoStep.Extensions
             this.logger = logger;
         }
 
-        public IEnumerable<string> PackageIds => targetIds;
+        public IEnumerable<string> PackageIds => packagesToInstall.Select(x => x.Id);
 
         public bool IsValid => true;
 

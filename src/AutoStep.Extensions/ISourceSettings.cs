@@ -3,7 +3,7 @@
 namespace AutoStep.Extensions
 {
     /// <summary>
-    /// Defines the interface for a provider of nuget source settings.
+    /// Defines the interface for a provider of  source settings.
     /// </summary>
     public interface ISourceSettings
     {
@@ -15,6 +15,6 @@ namespace AutoStep.Extensions
         /// <summary>
         /// Gets the package source provider.
         /// </summary>
-        public IPackageSourceProvider SourceProvider { get; }
+        public IPackageSourceProvider NugetSourceProvider { get; }
     }
 }

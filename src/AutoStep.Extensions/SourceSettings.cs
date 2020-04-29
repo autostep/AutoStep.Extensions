@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NuGet.Configuration;
 
-namespace AutoStep.Extensions.NuGetExtensions
+namespace AutoStep.Extensions
 {
     /// <summary>
     /// Provides an <see cref="ISourceSettings"/> implementation that allows a custom package source list to
@@ -15,7 +15,7 @@ namespace AutoStep.Extensions.NuGetExtensions
         public ISettings NuGetSettings { get; private set; }
 
         /// <inheritdoc/>
-        public IPackageSourceProvider SourceProvider { get; private set; }
+        public IPackageSourceProvider NugetSourceProvider { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SourceSettings"/> class.
@@ -24,7 +24,7 @@ namespace AutoStep.Extensions.NuGetExtensions
         public SourceSettings(string rootDir)
         {
             NuGetSettings = Settings.LoadDefaultSettings(rootDir);
-            SourceProvider = new PackageSourceProvider(NuGetSettings);
+            NugetSourceProvider = new PackageSourceProvider(NuGetSettings);
         }
 
         /// <summary>
@@ -33,7 +33,7 @@ namespace AutoStep.Extensions.NuGetExtensions
         /// <param name="sourceUrls">The set of custom sources.</param>
         public void AppendCustomSources(string[] sourceUrls)
         {
-            SourceProvider = new CustomPackageSourceProvider(SourceProvider.LoadPackageSources().Concat(sourceUrls.Select(x => new PackageSource(x))));
+            NugetSourceProvider = new CustomPackageSourceProvider(NugetSourceProvider.LoadPackageSources().Concat(sourceUrls.Select(x => new PackageSource(x))));
         }
 
         /// <summary>
@@ -42,7 +42,7 @@ namespace AutoStep.Extensions.NuGetExtensions
         /// <param name="sourceUrls">The set of source urls.</param>
         public void ReplaceCustomSources(string[] sourceUrls)
         {
-            SourceProvider = new CustomPackageSourceProvider(sourceUrls.Select(x => new PackageSource(x)));
+            NugetSourceProvider = new CustomPackageSourceProvider(sourceUrls.Select(x => new PackageSource(x)));
         }
 
         /// <summary>

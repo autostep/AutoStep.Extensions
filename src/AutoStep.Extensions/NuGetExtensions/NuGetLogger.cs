@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Logging;
 using NuGet.Common;
 
-namespace AutoStep.Extensions
+namespace AutoStep.Extensions.NuGetExtensions
 {
     using ILogger = Microsoft.Extensions.Logging.ILogger;
     using LogLevel = Microsoft.Extensions.Logging.LogLevel;

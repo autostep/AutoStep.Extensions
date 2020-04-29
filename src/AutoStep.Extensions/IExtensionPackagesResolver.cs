@@ -8,6 +8,6 @@ namespace AutoStep.Extensions
 {
     internal interface IExtensionPackagesResolver
     {
-        ValueTask<IInstallablePackageSet> ResolvePackagesAsync(IEnumerable<PackageExtensionConfiguration> extensions, CancellationToken cancelToken);
+        ValueTask<IInstallablePackageSet> ResolvePackagesAsync(ExtensionResolveContext resolveContext, CancellationToken cancelToken);
     }
 }

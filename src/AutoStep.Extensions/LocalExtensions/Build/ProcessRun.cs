@@ -39,33 +39,23 @@ namespace AutoStep.Extensions.Build
         }
 
         /// <summary>
-        /// Used to set an environment variable set on the created process.
-        /// </summary>
-        /// <param name="name">The environment variable name.</param>
-        /// <param name="value">The value of the variable.</param>
-        public void SetEnvironmentVariable(string name, string value)
-        {
-            EnvironmentVariables[name] = value;
-        }
-
-        /// <summary>
         /// Run the tool, returning a wait-able task where the result contains the contents of STDOUT.
         /// </summary>
         public async Task<int> Run()
         {
-            var proc = new Process
+            using var proc = new Process
             {
                 StartInfo =
                 {
-                  FileName = exeName,
-                  WorkingDirectory = workingDirectory,
-                  Arguments = string.Join(" ", args),
-                  LoadUserProfile = true,
-                  RedirectStandardError = true,
-                  RedirectStandardOutput = true,
-                  RedirectStandardInput = true,
-                  UseShellExecute = false
-                }
+                    FileName = exeName,
+                    WorkingDirectory = workingDirectory,
+                    Arguments = string.Join(" ", args),
+                    LoadUserProfile = true,
+                    RedirectStandardError = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardInput = true,
+                    UseShellExecute = false,
+                },
             };
 
             foreach (var item in EnvironmentVariables)

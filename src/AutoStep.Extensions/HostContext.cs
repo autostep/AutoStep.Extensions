@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.DependencyModel;
@@ -22,7 +23,7 @@ namespace AutoStep.Extensions
         /// Initializes a new instance of the <see cref="HostContext"/> class.
         /// </summary>
         /// <param name="hostAssembly">An assembly indicating the host context.</param>
-        public HostContext(Assembly hostAssembly, string extensionsDirectory, string? entryPointPackageTag)
+        public HostContext(Assembly hostAssembly, string rootDirectory, string? packageInstallDirectory, string? extensionPackageTag)
         {
             if (hostAssembly is null)
             {
@@ -33,8 +34,9 @@ namespace AutoStep.Extensions
             FrameworkName = hostDependencyContext.Target.Framework;
             TargetFramework = NuGetFramework.ParseFrameworkName(FrameworkName, DefaultFrameworkNameProvider.Instance);
             frameworkReducer = new FrameworkReducer();
-            EntryPointPackageTag = entryPointPackageTag;
-            ExtensionsDirectory = extensionsDirectory;
+            EntryPointPackageTag = extensionPackageTag;
+            RootDirectory = rootDirectory;
+            ExtensionsDirectory = packageInstallDirectory;
         }
 
         /// <inheritdoc/>
@@ -47,6 +49,8 @@ namespace AutoStep.Extensions
         public TargetInfo Target => hostDependencyContext.Target;
 
         public string? EntryPointPackageTag { get; }
+
+        public string RootDirectory { get; }
 
         public string ExtensionsDirectory { get; }
 

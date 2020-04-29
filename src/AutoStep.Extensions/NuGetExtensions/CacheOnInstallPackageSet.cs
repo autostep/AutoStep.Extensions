@@ -17,14 +17,14 @@ namespace AutoStep.Extensions.NuGetExtensions
     {
         private readonly string dependencyJsonFile;
         private readonly IHostContext hostContext;
-        private readonly IEnumerable<PackageExtensionConfiguration> configuredExtensions;
+        private readonly ExtensionResolveContext resolveContext;
         private readonly IInstallablePackageSet backingSet;
 
-        public CacheOnInstallPackageSet(string dependencyJsonFile, IHostContext hostContext, IEnumerable<PackageExtensionConfiguration> configuredExtensions, IInstallablePackageSet backingSet)
+        public CacheOnInstallPackageSet(string dependencyJsonFile, IHostContext hostContext, ExtensionResolveContext resolveContext, IInstallablePackageSet backingSet)
         {
             this.dependencyJsonFile = dependencyJsonFile;
             this.hostContext = hostContext;
-            this.configuredExtensions = configuredExtensions;
+            this.resolveContext = resolveContext;
             this.backingSet = backingSet;
         }
 
@@ -40,7 +40,7 @@ namespace AutoStep.Extensions.NuGetExtensions
             {
                 var result = await backingSet.InstallAsync(cancelToken);
 
-                SaveExtensionDependencyContext(configuredExtensions, result);
+                SaveExtensionDependencyContext(resolveContext, result);
 
                 return result;
             }
@@ -112,9 +112,12 @@ namespace AutoStep.Extensions.NuGetExtensions
             return createdString;
         }
 
-        private void SaveExtensionDependencyContext(IEnumerable<PackageExtensionConfiguration> configuredExtensions, InstalledExtensionPackages packages)
+        private void SaveExtensionDependencyContext(ExtensionResolveContext resolveContext, InstalledExtensionPackages packages)
         {
-            var targetIds = configuredExtensions.Select(x => x.Package!).ToList();
+            // Target IDs to be saved in the dependency context needs to include any additional packages required
+            // by other extension resolvers.
+            var targetIds = new HashSet<string>(resolveContext.PackageExtensions.Select(x => x.Package!)
+                                                                                .Concat(resolveContext.AdditionalPackagesRequired.Select(x => x.Id)));
 
             var newDepContext = new DependencyContext(
                 hostContext.Target,
@@ -132,13 +135,13 @@ namespace AutoStep.Extensions.NuGetExtensions
             }
         }
 
-        private RuntimeLibrary RuntimeLibraryFromPackage(IReadOnlyList<string> extensionIds, IPackageMetadata package, IReadOnlyList<IPackageMetadata> allPackages)
+        private RuntimeLibrary RuntimeLibraryFromPackage(ISet<string> topLevelPackageIds, IPackageMetadata package, IReadOnlyList<IPackageMetadata> allPackages)
         {
             var runtimeAssetGroup = new RuntimeAssetGroup(hostContext.Target.Runtime, package.LibFiles.Where(f => Path.GetExtension(f) == ".dll")
                                                                                          .Select(f => GetRuntimeFile(package, f)));
 
             return new RuntimeLibrary(
-                      extensionIds.Contains(package.PackageId) ? ExtensionRuntimeLibraryTypes.RootPackage : ExtensionRuntimeLibraryTypes.Dependency,
+                      topLevelPackageIds.Contains(package.PackageId) ? ExtensionRuntimeLibraryTypes.RootPackage : ExtensionRuntimeLibraryTypes.Dependency,
                       package.PackageId,
                       package.PackageVersion,
                       null,

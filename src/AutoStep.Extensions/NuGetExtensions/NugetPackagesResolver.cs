@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -12,7 +11,7 @@ using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using NuGet.Versioning;
 
-namespace AutoStep.Extensions
+namespace AutoStep.Extensions.NuGetExtensions
 {
     internal class NugetPackagesResolver : IExtensionPackagesResolver
     {
@@ -34,15 +33,16 @@ namespace AutoStep.Extensions
             this.logger = new NuGetLogger(logger);
 
             // Establish the source repository provider; the available providers come from our custom settings.
-            var sourceRepositoryProvider = new SourceRepositoryProvider(sourceSettings.SourceProvider, Repository.Provider.GetCoreV3());
+            var sourceRepositoryProvider = new SourceRepositoryProvider(sourceSettings.NugetSourceProvider, Repository.Provider.GetCoreV3());
 
             repositories = sourceRepositoryProvider.GetRepositories();
         }
 
-        public async ValueTask<IInstallablePackageSet> ResolvePackagesAsync(IEnumerable<PackageExtensionConfiguration> configuredExtensions, CancellationToken cancelToken)
+        public async ValueTask<IInstallablePackageSet> ResolvePackagesAsync(ExtensionResolveContext resolveContext, CancellationToken cancelToken)
         {
-            if (!configuredExtensions.Any())
+            if (!resolveContext.PackageExtensions.Any() && resolveContext.AdditionalPackagesRequired.Count == 0)
             {
+                // Nothing to do, no packages to install.
                 return EmptyValidPackageSet.Instance;
             }
 
@@ -59,19 +59,37 @@ namespace AutoStep.Extensions
                 var availablePackages = new HashSet<SourcePackageDependencyInfo>(PackageIdentityComparer.Default);
 
                 var targetIds = new List<string>();
+                var allPackageIds = new List<string>();
 
-                foreach (var package in configuredExtensions)
+                foreach (var package in resolveContext.PackageExtensions)
                 {
                     // Determine the correct version of the package to use.
                     var packageIdentity = await GetPackageIdentity(package, cacheContext, repositories, cancelToken).ConfigureAwait(false);
 
                     if (packageIdentity is null)
                     {
-                        throw new ExtensionLoadException(string.Format(CultureInfo.CurrentCulture, Messages.NuGetPackagesLoader_ExtensionNotFound, package.Package));
+                        throw new ExtensionLoadException(string.Format(CultureInfo.CurrentCulture, Messages.NuGetPackagesResolver_ExtensionNotFound, package.Package));
                     }
 
                     // Configured extensions make up our 'target' packages.
                     targetIds.Add(packageIdentity.Id);
+                    allPackageIds.Add(packageIdentity.Id);
+
+                    // Search the graph of all the package dependencies to get the full set of available packages.
+                    await GetPackageDependencies(packageIdentity, cacheContext, logger, repositories, availablePackages, cancelToken).ConfigureAwait(false);
+                }
+
+                foreach (var additionalPackage in resolveContext.AdditionalPackagesRequired)
+                {
+                    // Determine the correct version of the package to use.
+                    var packageIdentity = await GetPackageIdentity(additionalPackage.Id, additionalPackage.VersionRange, true, cacheContext, repositories, cancelToken).ConfigureAwait(false);
+
+                    if (packageIdentity is null)
+                    {
+                        throw new ExtensionLoadException(string.Format(CultureInfo.CurrentCulture, Messages.NuGetPackagesResolver_AdditionalDependencyNotFound, additionalPackage.Id));
+                    }
+
+                    allPackageIds.Add(packageIdentity.Id);
 
                     // Search the graph of all the package dependencies to get the full set of available packages.
                     await GetPackageDependencies(packageIdentity, cacheContext, logger, repositories, availablePackages, cancelToken).ConfigureAwait(false);
@@ -80,8 +98,8 @@ namespace AutoStep.Extensions
                 // Create a package resolver context (this is used to help figure out which actual package versions to install).
                 var resolverContext = new PackageResolverContext(
                        DependencyBehavior.Lowest,
+                       allPackageIds,
                        targetIds,
-                       Enumerable.Empty<string>(),
                        Enumerable.Empty<PackageReference>(),
                        Enumerable.Empty<PackageIdentity>(),
                        availablePackages,
@@ -105,7 +123,25 @@ namespace AutoStep.Extensions
         /// <summary>
         /// Retrieves the actual package identity to install for an extension, given the configuration (based on requested version specifier, pre-release, etc).
         /// </summary>
-        private async Task<PackageIdentity?> GetPackageIdentity(PackageExtensionConfiguration extConfig, SourceCacheContext cache, IEnumerable<SourceRepository> repositories, CancellationToken cancelToken)
+        private Task<PackageIdentity?> GetPackageIdentity(PackageExtensionConfiguration extConfig, SourceCacheContext cache, IEnumerable<SourceRepository> repositories, CancellationToken cancelToken)
+        {
+            VersionRange? range = null;
+
+            if (extConfig.Version is object)
+            {
+                if (!VersionRange.TryParse(extConfig.Version, out range))
+                {
+                    throw new ExtensionLoadException(string.Format(CultureInfo.CurrentCulture, Messages.NuGetPackagesResolver_BadVersionRange, extConfig.Package));
+                }
+            }
+
+            return GetPackageIdentity(extConfig.Package!, range, extConfig.PreRelease, cache, repositories, cancelToken);
+        }
+
+        /// <summary>
+        /// Retrieves the actual package identity to install for an extension, given the configuration (based on requested version specifier, pre-release, etc).
+        /// </summary>
+        private async Task<PackageIdentity?> GetPackageIdentity(string packageId, VersionRange? versionRange, bool permitPreRelease, SourceCacheContext cache, IEnumerable<SourceRepository> repositories, CancellationToken cancelToken)
         {
             // Go through each repository.
             // If a repository contains only pre-release packages (e.g. AutoStep CI), and the configuration doesn't permit pre-release versions,
@@ -114,33 +150,28 @@ namespace AutoStep.Extensions
             {
                 var findPackageResource = await sourceRepository.GetResourceAsync<FindPackageByIdResource>().ConfigureAwait(false);
 
-                var allVersions = (await findPackageResource.GetAllVersionsAsync(extConfig.Package, cache, logger, cancelToken).ConfigureAwait(false)).ToList();
+                var allVersions = (await findPackageResource.GetAllVersionsAsync(packageId, cache, logger, cancelToken).ConfigureAwait(false)).ToList();
 
                 NuGetVersion selected;
 
                 // Have we specified a version range?
-                if (extConfig.Version != null)
+                if (versionRange != null)
                 {
-                    if (!VersionRange.TryParse(extConfig.Version, out var range))
-                    {
-                        throw new ExtensionLoadException(string.Format(CultureInfo.CurrentCulture, Messages.NuGetPackagesLoader_BadVersionRange, extConfig.Package));
-                    }
-
                     // Find the best package version match for the range.
                     // Consider pre-release versions, but only if the extension is configured to use them.
-                    var bestVersion = range.FindBestMatch(allVersions.Where(v => extConfig.PreRelease || !v.IsPrerelease));
+                    var bestVersion = versionRange.FindBestMatch(allVersions.Where(v => permitPreRelease || !v.IsPrerelease));
 
                     selected = bestVersion;
                 }
                 else
                 {
                     // No version; choose the latest, allow pre-release if configured.
-                    selected = allVersions.LastOrDefault(v => v.IsPrerelease == extConfig.PreRelease);
+                    selected = allVersions.LastOrDefault(v => permitPreRelease || !v.IsPrerelease);
                 }
 
                 if (selected is object)
                 {
-                    return new PackageIdentity(extConfig.Package, selected);
+                    return new PackageIdentity(packageId, selected);
                 }
             }
 
@@ -153,7 +184,7 @@ namespace AutoStep.Extensions
         private async Task GetPackageDependencies(
                 PackageIdentity package,
                 SourceCacheContext cacheContext,
-                NuGet.Common.ILogger logger,
+                ILogger logger,
                 IEnumerable<SourceRepository> repositories,
                 ISet<SourcePackageDependencyInfo> availablePackages,
                 CancellationToken cancelToken)
