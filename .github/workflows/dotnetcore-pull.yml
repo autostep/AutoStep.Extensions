@@ -3,7 +3,8 @@ name: AutoStep Build
 on: [pull_request]
 
 jobs:
-  build:
+  linux:
+    name: 'Run Tests on Linux'
 
     runs-on: ubuntu-latest
 
@@ -15,6 +16,44 @@ jobs:
       with:
         dotnet-version: 3.1.200
                  
+    - name: Build with dotnet
+      run: dotnet build --configuration Release /p:TreatWarningsAsErrors=true
+    
+    - name: Run tests
+      run: dotnet test --configuration Release --no-build
+
+  windows:
+    name: 'Run Tests on Windows'
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v1
+      
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.200
+      
+    - name: Build with dotnet
+      run: dotnet build --configuration Release /p:TreatWarningsAsErrors=true
+    
+    - name: Run tests
+      run: dotnet test --configuration Release --no-build
+        
+  macos:
+    name: 'Run Tests on MacOS'
+
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v1
+      
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.200
+      
     - name: Build with dotnet
       run: dotnet build --configuration Release /p:TreatWarningsAsErrors=true
     

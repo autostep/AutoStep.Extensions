@@ -3,8 +3,9 @@ name: AutoStep Build
 on: [push]
 
 jobs:
-  build:
-
+  linux:
+    name: 'Run Tests on Linux, Pack and Publish'
+        
     runs-on: ubuntu-latest
 
     steps:
@@ -40,3 +41,41 @@ jobs:
 
     - name: Push
       run: dotnet nuget push 'artifacts/*' -n true -s https://f.feedz.io/autostep/ci/nuget/index.json -k ${{ secrets.FEEDZ_IO_KEY }}
+
+  windows:
+    name: 'Run Tests on Windows'
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v1
+      
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.200
+      
+    - name: Build with dotnet
+      run: dotnet build --configuration Release /p:TreatWarningsAsErrors=true
+    
+    - name: Run tests
+      run: dotnet test --configuration Release --no-build
+        
+  macos:
+    name: 'Run Tests on MacOS'
+
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v1
+      
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.200
+      
+    - name: Build with dotnet
+      run: dotnet build --configuration Release /p:TreatWarningsAsErrors=true
+    
+    - name: Run tests
+      run: dotnet test --configuration Release --no-build
