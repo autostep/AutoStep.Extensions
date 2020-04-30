@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentAssertions" Version="5.10.3" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.1.3" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
+    <PackageReference Include="Moq" Version="4.13.1" />
+    <PackageReference Include="xunit" Version="2.4.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="coverlet.msbuild" Version="2.8.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\AutoStep.Extensions.Abstractions\AutoStep.Extensions.Abstractions.csproj" />
+    <ProjectReference Include="..\..\src\AutoStep.Extensions\AutoStep.Extensions.csproj" />
+    <ProjectReference Include="..\AutoStep.Extensions.Tests.Shared\AutoStep.Extensions.Tests.Shared.csproj" />
+  </ItemGroup>
+  
+  <!-- Copy deps.json from the original project. -->
+  <ItemGroup>
+    <ExtDepsJson Include="..\..\src\AutoStep.Extensions\bin\$(Configuration)\$(TargetFramework)\AutoStep.Extensions.deps.json" />
+  </ItemGroup>
+  <Target Name="__CopyExtensionDepsJson" BeforeTargets="Build">
+    <Copy SourceFiles="@(ExtDepsJson)" DestinationFolder="$(TargetDir)" />
+  </Target>
+
+</Project>

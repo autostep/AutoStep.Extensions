@@ -15,7 +15,7 @@ namespace AutoStep.Extensions
         public ISettings NuGetSettings { get; private set; }
 
         /// <inheritdoc/>
-        public IPackageSourceProvider SourceProvider { get; private set; }
+        public IPackageSourceProvider NugetSourceProvider { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SourceSettings"/> class.
@@ -24,7 +24,7 @@ namespace AutoStep.Extensions
         public SourceSettings(string rootDir)
         {
             NuGetSettings = Settings.LoadDefaultSettings(rootDir);
-            SourceProvider = new PackageSourceProvider(NuGetSettings);
+            NugetSourceProvider = new PackageSourceProvider(NuGetSettings);
         }
 
         /// <summary>
@@ -33,7 +33,7 @@ namespace AutoStep.Extensions
         /// <param name="sourceUrls">The set of custom sources.</param>
         public void AppendCustomSources(string[] sourceUrls)
         {
-            SourceProvider = new CustomPackageSourceProvider(SourceProvider.LoadPackageSources().Concat(sourceUrls.Select(x => new PackageSource(x))));
+            NugetSourceProvider = new CustomPackageSourceProvider(NugetSourceProvider.LoadPackageSources().Concat(sourceUrls.Select(x => new PackageSource(x))));
         }
 
         /// <summary>
@@ -42,7 +42,7 @@ namespace AutoStep.Extensions
         /// <param name="sourceUrls">The set of source urls.</param>
         public void ReplaceCustomSources(string[] sourceUrls)
         {
-            SourceProvider = new CustomPackageSourceProvider(sourceUrls.Select(x => new PackageSource(x)));
+            NugetSourceProvider = new CustomPackageSourceProvider(sourceUrls.Select(x => new PackageSource(x)));
         }
 
         /// <summary>
@@ -50,15 +50,15 @@ namespace AutoStep.Extensions
         /// </summary>
         private class CustomPackageSourceProvider : IPackageSourceProvider
         {
-            private List<PackageSource> sourceList;
+            private readonly List<PackageSource> sourceList;
 
             public string ActivePackageSourceName => sourceList.LastOrDefault().Name;
 
             public string DefaultPushSource => throw new NotImplementedException();
 
-            #pragma warning disable CS0067 // Not raising it, but required by the interface.
+#pragma warning disable CS0067 // Not raising it, but required by the interface.
             public event EventHandler? PackageSourcesChanged;
-            #pragma warning restore CS0067
+#pragma warning restore CS0067
 
             public CustomPackageSourceProvider(IEnumerable<PackageSource> sources)
             {

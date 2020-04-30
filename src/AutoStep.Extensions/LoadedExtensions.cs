@@ -18,7 +18,7 @@ namespace AutoStep.Extensions
     {
         private readonly List<TExtensionEntryPoint> extensions = new List<TExtensionEntryPoint>();
         private readonly IReadOnlyList<string> requiredPackages;
-        private readonly ExtensionPackages extPackages;
+        private readonly InstalledExtensionPackages extPackages;
 
         private readonly WeakReference weakContextReference;
         private ExtensionsAssemblyLoadContext loadContext;
@@ -29,7 +29,7 @@ namespace AutoStep.Extensions
         /// Initializes a new instance of the <see cref="LoadedExtensions{TExtensionEntryPoint}"/> class.
         /// </summary>
         /// <param name="packages">The set of packages to load from.</param>
-        public LoadedExtensions(ExtensionPackages packages)
+        public LoadedExtensions(InstalledExtensionPackages packages)
         {
             isDisposed = false;
 
@@ -38,17 +38,13 @@ namespace AutoStep.Extensions
 
             this.requiredPackages = extensions.Select(x => x.PackageId).ToList();
             this.extPackages = packages;
-            this.ExtensionsRootDir = packages.PackagesRootDir;
 
             loadContext = new ExtensionsAssemblyLoadContext(extPackages);
             weakContextReference = new WeakReference(loadContext);
         }
 
         /// <inheritdoc/>
-        public string ExtensionsRootDir { get; }
-
-        /// <inheritdoc/>
-        public IEnumerable<IPackageMetadata> LoadedPackages => extPackages.Packages;
+        public IEnumerable<IPackageMetadata> Packages => extPackages.Packages;
 
         /// <inheritdoc/>
         public IEnumerable<TExtensionEntryPoint> ExtensionEntryPoints => extensions;
@@ -111,7 +107,7 @@ namespace AutoStep.Extensions
             return extPackages.Packages.Any(p => p.PackageId == packageId);
         }
 
-        private void ThrowIfRequestedExtensionPackage(PackageMetadata package)
+        private void ThrowIfRequestedExtensionPackage(IPackageMetadata package)
         {
             if (requiredPackages.Contains(package.PackageId))
             {

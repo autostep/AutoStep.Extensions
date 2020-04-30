@@ -61,128 +61,146 @@ namespace AutoStep.Extensions {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Requested additional dependency {0}, has version {1}, which is not a match for the cached version, {2}..
+        /// </summary>
+        internal static string CachedPackagesResolver_AdditionalDependencyVersionNotCompatibleWithCache {
+            get {
+                return ResourceManager.GetString("CachedPackagesResolver_AdditionalDependencyVersionNotCompatibleWithCache", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Bad version in dependency cache for {0}..
         /// </summary>
-        internal static string CachedPackagesLoader_BadVersionInDependencyCache {
+        internal static string CachedPackagesResolver_BadVersionInDependencyCache {
             get {
-                return ResourceManager.GetString("CachedPackagesLoader_BadVersionInDependencyCache", resourceCulture);
+                return ResourceManager.GetString("CachedPackagesResolver_BadVersionInDependencyCache", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cached additional dependency info for {0} is valid..
+        /// </summary>
+        internal static string CachedPackagesResolver_CachedAdditionalDepIsValid {
+            get {
+                return ResourceManager.GetString("CachedPackagesResolver_CachedAdditionalDepIsValid", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Cached extension dependency info for {0} is valid..
         /// </summary>
-        internal static string CachedPackagesLoader_CachedExtensionInfoIsValid {
+        internal static string CachedPackagesResolver_CachedExtensionInfoIsValid {
             get {
-                return ResourceManager.GetString("CachedPackagesLoader_CachedExtensionInfoIsValid", resourceCulture);
+                return ResourceManager.GetString("CachedPackagesResolver_CachedExtensionInfoIsValid", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Extension dependency cache data exists; verifying..
         /// </summary>
-        internal static string CachedPackagesLoader_CacheExistsVerifying {
+        internal static string CachedPackagesResolver_CacheExistsVerifying {
             get {
-                return ResourceManager.GetString("CachedPackagesLoader_CacheExistsVerifying", resourceCulture);
+                return ResourceManager.GetString("CachedPackagesResolver_CacheExistsVerifying", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Package files available. Cache valid, using it..
         /// </summary>
-        internal static string CachedPackagesLoader_CacheValid {
+        internal static string CachedPackagesResolver_CacheValid {
             get {
-                return ResourceManager.GetString("CachedPackagesLoader_CacheValid", resourceCulture);
+                return ResourceManager.GetString("CachedPackagesResolver_CacheValid", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Cannot find library file {0} for cached package {1}..
         /// </summary>
-        internal static string CachedPackagesLoader_CannotFindLibraryFile {
+        internal static string CachedPackagesResolver_CannotFindLibraryFile {
             get {
-                return ResourceManager.GetString("CachedPackagesLoader_CannotFindLibraryFile", resourceCulture);
+                return ResourceManager.GetString("CachedPackagesResolver_CannotFindLibraryFile", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Version range specified in the {0} extension configuration, {1}, is not a match for the cached version, {2}..
         /// </summary>
-        internal static string CachedPackagesLoader_ConfiguredVersionNotCompatibleWithCache {
+        internal static string CachedPackagesResolver_ConfiguredExtensionVersionNotCompatibleWithCache {
             get {
-                return ResourceManager.GetString("CachedPackagesLoader_ConfiguredVersionNotCompatibleWithCache", resourceCulture);
+                return ResourceManager.GetString("CachedPackagesResolver_ConfiguredExtensionVersionNotCompatibleWithCache", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Extension dependency cache contains extension package {0} that has not been requested by configuration..
+        ///   Looks up a localized string similar to Extension dependency cache contains package {0} that has not been requested by configuration..
         /// </summary>
-        internal static string CachedPackagesLoader_DependencyCacheContainsUnrequiredPackage {
+        internal static string CachedPackagesResolver_DependencyCacheContainsUnrequiredPackage {
             get {
-                return ResourceManager.GetString("CachedPackagesLoader_DependencyCacheContainsUnrequiredPackage", resourceCulture);
+                return ResourceManager.GetString("CachedPackagesResolver_DependencyCacheContainsUnrequiredPackage", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Invalid extension version range specified for the {0} extension..
         /// </summary>
-        internal static string CachedPackagesLoader_InvalidExtensionVersionRange {
+        internal static string CachedPackagesResolver_InvalidExtensionVersionRange {
             get {
-                return ResourceManager.GetString("CachedPackagesLoader_InvalidExtensionVersionRange", resourceCulture);
+                return ResourceManager.GetString("CachedPackagesResolver_InvalidExtensionVersionRange", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to No entry in dependency cache for {0}..
         /// </summary>
-        internal static string CachedPackagesLoader_NoEntryInDependencyCache {
+        internal static string CachedPackagesResolver_NoEntryInDependencyCache {
             get {
-                return ResourceManager.GetString("CachedPackagesLoader_NoEntryInDependencyCache", resourceCulture);
+                return ResourceManager.GetString("CachedPackagesResolver_NoEntryInDependencyCache", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Package files not all available; ignoring cache..
         /// </summary>
-        internal static string CachedPackagesLoader_NotAllFilesAvailable {
+        internal static string CachedPackagesResolver_NotAllFilesAvailable {
             get {
-                return ResourceManager.GetString("CachedPackagesLoader_NotAllFilesAvailable", resourceCulture);
+                return ResourceManager.GetString("CachedPackagesResolver_NotAllFilesAvailable", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Install directory for cached package {0} does not exist..
         /// </summary>
-        internal static string CachedPackagesLoader_PackageDirectoryDoesNotExist {
+        internal static string CachedPackagesResolver_PackageDirectoryDoesNotExist {
             get {
-                return ResourceManager.GetString("CachedPackagesLoader_PackageDirectoryDoesNotExist", resourceCulture);
+                return ResourceManager.GetString("CachedPackagesResolver_PackageDirectoryDoesNotExist", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to The cached extension version for {0} is a pre-release, but the extension configuration does not allow pre-releases..
         /// </summary>
-        internal static string CachedPackagesLoader_PreReleaseInCacheNotAllowed {
+        internal static string CachedPackagesResolver_PreReleaseInCacheNotAllowed {
             get {
-                return ResourceManager.GetString("CachedPackagesLoader_PreReleaseInCacheNotAllowed", resourceCulture);
+                return ResourceManager.GetString("CachedPackagesResolver_PreReleaseInCacheNotAllowed", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Set of root packages not valid; ignoring cache..
         /// </summary>
-        internal static string CachedPackagesLoader_RootPackagesNotValid {
+        internal static string CachedPackagesResolver_RootPackagesNotValid {
             get {
-                return ResourceManager.GetString("CachedPackagesLoader_RootPackagesNotValid", resourceCulture);
+                return ResourceManager.GetString("CachedPackagesResolver_RootPackagesNotValid", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Set of root packages is valid; verifying package files..
         /// </summary>
-        internal static string CachedPackagesLoader_RootPackagesValid {
+        internal static string CachedPackagesResolver_RootPackagesValid {
             get {
-                return ResourceManager.GetString("CachedPackagesLoader_RootPackagesValid", resourceCulture);
+                return ResourceManager.GetString("CachedPackagesResolver_RootPackagesValid", resourceCulture);
             }
         }
         
@@ -201,6 +219,24 @@ namespace AutoStep.Extensions {
         internal static string ExtensionSetLoader_ExtensionDirectoryMustBeFullyQualified {
             get {
                 return ResourceManager.GetString("ExtensionSetLoader_ExtensionDirectoryMustBeFullyQualified", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Provided directory must be an absolute path..
+        /// </summary>
+        internal static string HostContext_DirectoryMustBeAbsolute {
+            get {
+                return ResourceManager.GetString("HostContext_DirectoryMustBeAbsolute", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot install an invalid package set..
+        /// </summary>
+        internal static string InvalidPackageResolver_CannotInstallInvalidSet {
+            get {
+                return ResourceManager.GetString("InvalidPackageResolver_CannotInstallInvalidSet", resourceCulture);
             }
         }
         
@@ -241,20 +277,29 @@ namespace AutoStep.Extensions {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Could not locate additional dependency {0}..
+        /// </summary>
+        internal static string NuGetPackagesResolver_AdditionalDependencyNotFound {
+            get {
+                return ResourceManager.GetString("NuGetPackagesResolver_AdditionalDependencyNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid extension version range specified in the configuration for the {0} extension..
         /// </summary>
-        internal static string NuGetPackagesLoader_BadVersionRange {
+        internal static string NuGetPackagesResolver_BadVersionRange {
             get {
-                return ResourceManager.GetString("NuGetPackagesLoader_BadVersionRange", resourceCulture);
+                return ResourceManager.GetString("NuGetPackagesResolver_BadVersionRange", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Could not locate extension package {0}..
         /// </summary>
-        internal static string NuGetPackagesLoader_ExtensionNotFound {
+        internal static string NuGetPackagesResolver_ExtensionNotFound {
             get {
-                return ResourceManager.GetString("NuGetPackagesLoader_ExtensionNotFound", resourceCulture);
+                return ResourceManager.GetString("NuGetPackagesResolver_ExtensionNotFound", resourceCulture);
             }
         }
     }
