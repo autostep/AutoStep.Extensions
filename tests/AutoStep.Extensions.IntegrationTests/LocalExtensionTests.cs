@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using AutoStep.Extensions.Tests.Utils;
+using AutoStep.Extensions.IntegrationTests.Utils;
 using FluentAssertions;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace AutoStep.Extensions.Tests
+namespace AutoStep.Extensions.IntegrationTests
 {
     public class LocalExtensionTests : BaseExtensionTests
     {
@@ -43,8 +43,8 @@ namespace AutoStep.Extensions.Tests
 
             using (var loadedExtensions = installedSet.LoadExtensionsFromPackages<IExtensionEntryPoint>(LogFactory))
             {
-                loadedExtensions.Packages.Should().HaveCount(3);
-                loadedExtensions.Packages.Select(x => x.PackageId).Should().Contain("Newtonsoft.Json", "Serilog", "LocalExtension");
+                loadedExtensions.Packages.Should().HaveCount(4);
+                loadedExtensions.Packages.Select(x => x.PackageId).Should().Contain("Newtonsoft.Json", "Serilog", "LocalExtension", "AutoMapper");
 
                 loadedExtensions.ExtensionEntryPoints.Should().HaveCount(1);
 

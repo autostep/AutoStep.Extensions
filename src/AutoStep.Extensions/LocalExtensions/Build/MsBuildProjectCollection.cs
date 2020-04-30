@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using AutoStep.Extensions.LocalExtensions;
-using AutoStep.Extensions.LocalExtensions.Build;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Graph;
@@ -11,7 +9,7 @@ using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
-namespace AutoStep.Extensions.Build
+namespace AutoStep.Extensions.LocalExtensions.Build
 {
     /// <summary>
     /// Contains a set of loaded MSBuild projects, that can be interrogated and built.
@@ -27,7 +25,7 @@ namespace AutoStep.Extensions.Build
         {
             // Define a project collection, and construct the graph of projects.
             projectCollection = new ProjectCollection(configOptions);
-            graph = new ProjectGraph(projectPaths, projectCollection);
+            graph = new ProjectGraph(projectPaths, configOptions, projectCollection);
 
             this.hostContext = hostContext;
             this.logger = logger;
@@ -39,13 +37,14 @@ namespace AutoStep.Extensions.Build
         /// <param name="projectPaths">The set of absolute project paths.</param>
         /// <param name="logger">A logger for the collection.</param>
         /// <param name="hostContext">The host context.</param>
+        /// <param name="debugMode">Whether to use the Debug project configuration.</param>
         /// <returns>A new project collection.</returns>
-        public static MsBuildProjectCollection Create(IEnumerable<string> projectPaths, ILogger logger, IHostContext hostContext)
+        public static MsBuildProjectCollection Create(IEnumerable<string> projectPaths, ILogger logger, IHostContext hostContext, bool debugMode = false)
         {
             // Use MSBuild.
             var configOptions = new Dictionary<string, string>
             {
-                { "Configuration", "Debug" },
+                { "Configuration", debugMode ? "Debug" : "Release" },
             };
 
             return new MsBuildProjectCollection(projectPaths, hostContext, logger, configOptions);
@@ -82,11 +81,17 @@ namespace AutoStep.Extensions.Build
                 var packageId = package.EvaluatedInclude;
                 var packageVersion = package.GetMetadataValue("Version");
                 var privateAssets = package.GetMetadataValue("PrivateAssets");
+                var excludeAssets = package.GetMetadataValue("ExcludeAssets");
 
                 if (privateAssets.Contains("all", StringComparison.InvariantCultureIgnoreCase) ||
                     privateAssets.Contains("runtime", StringComparison.InvariantCultureIgnoreCase))
                 {
                     // Don't include packages if they won't be copied to the output.
+                    continue;
+                }
+                else if (excludeAssets.Contains("runtime", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    // Don't consume packages that don't bring over the runtime.
                     continue;
                 }
                 else
@@ -160,7 +165,9 @@ namespace AutoStep.Extensions.Build
                     project.Directory,
                     "build",
                     "-v",
-                    "minimal");
+                    "minimal",
+                    "-c",
+                    projectCollection.GlobalProperties["Configuration"]);
 
                 var exitCode = await processRun.Run().ConfigureAwait(false);
 

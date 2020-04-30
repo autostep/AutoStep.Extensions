@@ -5,20 +5,18 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using AutoStep.Extensions.Abstractions;
+using AutoStep.Extensions.Tests.Shared;
 using AutoStep.Projects;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Xunit.Abstractions;
 
-namespace AutoStep.Extensions.Tests.Utils
+namespace AutoStep.Extensions.IntegrationTests.Utils
 {
-    public abstract class BaseExtensionTests
+    public abstract class BaseExtensionTests : TestLoggingBase
     {
-        protected ILoggerFactory LogFactory { get; }
-
-        public BaseExtensionTests(ITestOutputHelper outputHelper)
+        public BaseExtensionTests(ITestOutputHelper outputHelper) 
+            : base(outputHelper)
         {
-            LogFactory = TestLogFactory.Create(outputHelper);
         }
 
         protected class ExtensionTestContext : IDisposable
@@ -66,7 +64,7 @@ namespace AutoStep.Extensions.Tests.Utils
 
             // test-packages artifact path.
             var relativePathToTestPackages = "../../../../../artifacts/testpackages";
-            var relativePathToTestProjects = "../../../../../tests";
+            var relativePathToTestProjects = "../../../../../tests/projects";
 
             var effectiveRootFolder = Path.GetFullPath(relativePathToTestProjects, assemblyDirectory!);
 

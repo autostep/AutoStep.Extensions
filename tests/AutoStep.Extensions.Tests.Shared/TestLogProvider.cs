@@ -3,9 +3,9 @@ using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
 using Xunit.Abstractions;
 
-namespace AutoStep.Extensions.Tests.Utils
+namespace AutoStep.Extensions.Tests.Shared
 {
-    public class TestLogProvider : ILoggerProvider
+    internal class TestLogProvider : ILoggerProvider
     {
         private readonly ITestOutputHelper outputHelper;
 

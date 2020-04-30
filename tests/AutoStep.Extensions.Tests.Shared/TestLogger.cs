@@ -1,9 +1,9 @@
 ﻿using System;
 using Microsoft.Extensions.Logging;
 
-namespace AutoStep.Extensions.Tests.Utils
+namespace AutoStep.Extensions.Tests.Shared
 {
-    public class TestLogger : ILogger
+    internal class TestLogger : ILogger
     {
         private readonly TestLogProvider provider;
         private readonly string name;

@@ -5,7 +5,7 @@ namespace AutoStep.Extensions.LocalExtensions.Build
     /// <summary>
     /// Provides singleton access to the MSBuildLocator.
     /// </summary>
-    public static class MsBuildLibraryLoader
+    internal static class MsBuildLibraryLoader
     {
         private static readonly object Sync = new object();
         private static bool isLoaded;

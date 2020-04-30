@@ -9,7 +9,7 @@ using AutoStep.Execution;
 using AutoStep.Execution.Contexts;
 using AutoStep.Execution.Events;
 using AutoStep.Extensions.Abstractions;
-using AutoStep.Extensions.Tests.Utils;
+using AutoStep.Extensions.IntegrationTests.Utils;
 using AutoStep.Language;
 using AutoStep.Language.Test;
 using AutoStep.Projects;
@@ -17,7 +17,7 @@ using FluentAssertions;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace AutoStep.Extensions.Tests
+namespace AutoStep.Extensions.IntegrationTests
 {
     public class ExtensionWithEventHandlerTests : BaseExtensionTests
     {

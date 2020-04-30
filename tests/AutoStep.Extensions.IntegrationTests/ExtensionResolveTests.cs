@@ -1,20 +1,13 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using AutoStep.Extensions.Abstractions;
-using AutoStep.Extensions.Tests.Utils;
-using AutoStep.Projects;
+using AutoStep.Extensions.IntegrationTests.Utils;
 using FluentAssertions;
-using Microsoft.Extensions.Configuration;
-using Moq;
-using NuGet.Packaging.Signing;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace AutoStep.Extensions.Tests
+namespace AutoStep.Extensions.IntegrationTests
 {
     public class ExtensionResolveTests : BaseExtensionTests
     {
@@ -22,7 +15,7 @@ namespace AutoStep.Extensions.Tests
             : base(outputHelper)
         {
         }
-                
+
         [Fact]
         public async Task SimplePackageLoad()
         {
