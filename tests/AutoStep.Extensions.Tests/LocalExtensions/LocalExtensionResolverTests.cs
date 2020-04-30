@@ -10,7 +10,7 @@ using Xunit;
 using Xunit.Abstractions;
 
 namespace AutoStep.Extensions.Tests.LocalExtensions
-{
+{    
     [Collection("Build")]
     public class LocalExtensionResolverTests : TestLoggingBase
     {

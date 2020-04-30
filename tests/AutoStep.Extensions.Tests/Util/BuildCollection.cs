@@ -5,7 +5,7 @@ using Xunit;
 
 namespace AutoStep.Extensions.Tests.Util
 {
-    [CollectionDefinition("Build")]
+    [CollectionDefinition("Build", DisableParallelization = true)]
     public class BuildCollection : ICollectionFixture<MsBuildFixture>
     {
     }
