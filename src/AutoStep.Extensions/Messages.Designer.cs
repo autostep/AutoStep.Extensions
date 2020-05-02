@@ -88,6 +88,15 @@ namespace AutoStep.Extensions {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cache data not available..
+        /// </summary>
+        internal static string CachedPackagesResolver_CacheDataNotAvailable {
+            get {
+                return ResourceManager.GetString("CachedPackagesResolver_CacheDataNotAvailable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cached extension dependency info for {0} is valid..
         /// </summary>
         internal static string CachedPackagesResolver_CachedExtensionInfoIsValid {
@@ -129,6 +138,15 @@ namespace AutoStep.Extensions {
         internal static string CachedPackagesResolver_ConfiguredExtensionVersionNotCompatibleWithCache {
             get {
                 return ResourceManager.GetString("CachedPackagesResolver_ConfiguredExtensionVersionNotCompatibleWithCache", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Corrupt or unavailable extension cache file. Ignoring cache..
+        /// </summary>
+        internal static string CachedPackagesResolver_CorruptExtensionCacheFile {
+            get {
+                return ResourceManager.GetString("CachedPackagesResolver_CorruptExtensionCacheFile", resourceCulture);
             }
         }
         
@@ -201,15 +219,6 @@ namespace AutoStep.Extensions {
         internal static string CachedPackagesResolver_RootPackagesValid {
             get {
                 return ResourceManager.GetString("CachedPackagesResolver_RootPackagesValid", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Corrupt or unavailable extension cache file. Ignoring cache..
-        /// </summary>
-        internal static string ExtensionSetLoader_CorruptExtensionCacheFile {
-            get {
-                return ResourceManager.GetString("ExtensionSetLoader_CorruptExtensionCacheFile", resourceCulture);
             }
         }
         

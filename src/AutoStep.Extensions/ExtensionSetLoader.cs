@@ -74,6 +74,7 @@ namespace AutoStep.Extensions
 
             // Create composite resolver.
             var compositeResolver = new CompositeExtensionResolver(
+                hostContext,
                 new LocalExtensionResolver(hostContext, logger),
                 new NugetFallbackPackageResolver(sourceSettings, hostContext, noCache, logger));
 

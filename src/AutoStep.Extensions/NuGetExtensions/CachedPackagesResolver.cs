@@ -38,14 +38,15 @@ namespace AutoStep.Extensions.NuGetExtensions
         /// <inheritdoc/>
         public async ValueTask<IInstallablePackageSet> ResolvePackagesAsync(ExtensionResolveContext resolveContext, CancellationToken cancelToken)
         {
-            logger.LogDebug(Messages.CachedPackagesResolver_CacheExistsVerifying);
-
             var knownCache = LoadCachedDependencyInfo();
 
             if (knownCache is null)
             {
+                logger.LogDebug(Messages.CachedPackagesResolver_CacheDataNotAvailable);
                 return new InvalidPackageSet();
             }
+
+            logger.LogDebug(Messages.CachedPackagesResolver_CacheExistsVerifying);
 
             var cacheValid = ValidateRootPackages(resolveContext, knownCache);
 
@@ -96,7 +97,7 @@ namespace AutoStep.Extensions.NuGetExtensions
             catch (Exception ex)
             {
                 // Corrupt file, IO error? Lets just assume we can't get the info.
-                logger.LogWarning(ex, Messages.ExtensionSetLoader_CorruptExtensionCacheFile);
+                logger.LogWarning(ex, Messages.CachedPackagesResolver_CorruptExtensionCacheFile);
             }
 
             return null;
@@ -114,22 +115,28 @@ namespace AutoStep.Extensions.NuGetExtensions
         /// </summary>
         private bool ValidateRootPackages(ExtensionResolveContext resolveContext, DependencyContext knownCache)
         {
-            var rootRuntimeLibraries = knownCache.RuntimeLibraries.Where(x => x.Type == ExtensionRuntimeLibraryTypes.RootPackage).ToDictionary(x => x.Name);
+            var rootRuntimeLibraries = knownCache.RuntimeLibraries.Where(x => x.Type == PackageDependencyTypes.ExtensionPackage ||
+                                                                              x.Type == PackageDependencyTypes.AdditionalRootPackage).ToDictionary(x => x.Name);
+
             var isValid = true;
+            var foundLibraries = new HashSet<string>();
 
-            isValid = ProcessExtensionPackages(resolveContext, rootRuntimeLibraries) &&
-                      ProcessAdditionalPackages(resolveContext, knownCache.RuntimeLibraries);
+            isValid = ProcessExtensionPackages(resolveContext, rootRuntimeLibraries, foundLibraries) &&
+                      ProcessAdditionalPackages(resolveContext, rootRuntimeLibraries, foundLibraries);
 
-            foreach (var extraRootPackage in rootRuntimeLibraries)
+            foreach (var rootPackage in rootRuntimeLibraries)
             {
-                logger.LogDebug(Messages.CachedPackagesResolver_DependencyCacheContainsUnrequiredPackage, extraRootPackage.Key);
-                isValid = false;
+                if (!foundLibraries.Contains(rootPackage.Key))
+                {
+                    logger.LogDebug(Messages.CachedPackagesResolver_DependencyCacheContainsUnrequiredPackage, rootPackage.Key);
+                    isValid = false;
+                }
             }
 
             return isValid;
         }
 
-        private bool ProcessExtensionPackages(ExtensionResolveContext resolveContext, Dictionary<string, RuntimeLibrary> rootRuntimeLibraries)
+        private bool ProcessExtensionPackages(ExtensionResolveContext resolveContext, Dictionary<string, RuntimeLibrary> rootRuntimeLibraries, HashSet<string> foundLibraries)
         {
             var isValid = true;
 
@@ -143,8 +150,8 @@ namespace AutoStep.Extensions.NuGetExtensions
                 // Look for a runtime library.
                 if (rootRuntimeLibraries.TryGetValue(extConfig.Package, out var lib))
                 {
-                    // Remove the item from the dictionary (to give us our 'extras' list at the end of the loop).
-                    rootRuntimeLibraries.Remove(extConfig.Package);
+                    // Add that we've used it.
+                    foundLibraries.Add(lib.Name);
 
                     // Ok, so we have a cached entry; is it the right version?
                     if (NuGetVersion.TryParse(lib.Version, out var parsedCacheVersion))
@@ -194,24 +201,24 @@ namespace AutoStep.Extensions.NuGetExtensions
             return isValid;
         }
 
-        private bool ProcessAdditionalPackages(ExtensionResolveContext resolveContext, IReadOnlyList<RuntimeLibrary> runtimeLibraries)
+        private bool ProcessAdditionalPackages(ExtensionResolveContext resolveContext, Dictionary<string, RuntimeLibrary> rootRuntimeLibraries, HashSet<string> foundLibraries)
         {
             var isValid = true;
 
             foreach (var dependency in resolveContext.AdditionalPackagesRequired)
             {
-                var foundLib = runtimeLibraries.FirstOrDefault(x => x.Name == dependency.Id);
-
                 // Look for a runtime library.
-                if (foundLib is object)
+                if (rootRuntimeLibraries.TryGetValue(dependency.Id, out var lib))
                 {
+                    foundLibraries.Add(lib.Name);
+
                     // Ok, so we have a cached entry; is it the right version?
-                    if (NuGetVersion.TryParse(foundLib.Version, out var parsedCacheVersion))
+                    if (NuGetVersion.TryParse(lib.Version, out var parsedCacheVersion))
                     {
                         if (!dependency.VersionRange.Satisfies(parsedCacheVersion))
                         {
                             // Range not satisfied.
-                            logger.LogDebug(Messages.CachedPackagesResolver_AdditionalDependencyVersionNotCompatibleWithCache, dependency.Id, dependency.VersionRange.ToString(), foundLib.Version);
+                            logger.LogDebug(Messages.CachedPackagesResolver_AdditionalDependencyVersionNotCompatibleWithCache, dependency.Id, dependency.VersionRange.ToString(), lib.Version);
                             isValid = false;
                         }
                     }
@@ -283,7 +290,7 @@ namespace AutoStep.Extensions.NuGetExtensions
                         packageDir,
                         entryPoint,
                         libFiles,
-                        runtimeLib.Type == ExtensionRuntimeLibraryTypes.RootPackage,
+                        runtimeLib.Type,
                         runtimeLib.Dependencies.Select(d => d.Name)));
                 }
                 else

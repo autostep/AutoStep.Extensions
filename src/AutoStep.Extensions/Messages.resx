@@ -126,6 +126,9 @@
   <data name="CachedPackagesResolver_CachedAdditionalDepIsValid" xml:space="preserve">
     <value>Cached additional dependency info for {0} is valid.</value>
   </data>
+  <data name="CachedPackagesResolver_CacheDataNotAvailable" xml:space="preserve">
+    <value>Cache data not available.</value>
+  </data>
   <data name="CachedPackagesResolver_CachedExtensionInfoIsValid" xml:space="preserve">
     <value>Cached extension dependency info for {0} is valid.</value>
   </data>
@@ -140,6 +143,9 @@
   </data>
   <data name="CachedPackagesResolver_ConfiguredExtensionVersionNotCompatibleWithCache" xml:space="preserve">
     <value>Version range specified in the {0} extension configuration, {1}, is not a match for the cached version, {2}.</value>
+  </data>
+  <data name="CachedPackagesResolver_CorruptExtensionCacheFile" xml:space="preserve">
+    <value>Corrupt or unavailable extension cache file. Ignoring cache.</value>
   </data>
   <data name="CachedPackagesResolver_DependencyCacheContainsUnrequiredPackage" xml:space="preserve">
     <value>Extension dependency cache contains package {0} that has not been requested by configuration.</value>
@@ -164,9 +170,6 @@
   </data>
   <data name="CachedPackagesResolver_RootPackagesValid" xml:space="preserve">
     <value>Set of root packages is valid; verifying package files.</value>
-  </data>
-  <data name="ExtensionSetLoader_CorruptExtensionCacheFile" xml:space="preserve">
-    <value>Corrupt or unavailable extension cache file. Ignoring cache.</value>
   </data>
   <data name="ExtensionSetLoader_ExtensionDirectoryMustBeFullyQualified" xml:space="preserve">
     <value>Extension directory must be a fully-qualified path.</value>

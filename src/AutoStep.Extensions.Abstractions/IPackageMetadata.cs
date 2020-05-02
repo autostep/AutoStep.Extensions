@@ -33,9 +33,9 @@ namespace AutoStep.Extensions
         string? EntryPoint { get; }
 
         /// <summary>
-        /// Gets a value indicating whether the specified package is a top-level dependency (as opposed to a nested chain dependency).
+        /// Gets the package category (from <see cref="PackageDependencyTypes"/>).
         /// </summary>
-        bool IsTopLevel { get; }
+        string DependencyType { get; }
 
         /// <summary>
         /// Gets the set of dependent package IDs.

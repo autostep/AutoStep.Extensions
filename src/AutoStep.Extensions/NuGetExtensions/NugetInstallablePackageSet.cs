@@ -21,7 +21,8 @@ namespace AutoStep.Extensions.NuGetExtensions
         private readonly ISourceSettings settings;
         private readonly IHostContext hostContext;
         private readonly IEnumerable<SourcePackageDependencyInfo> packagesToInstall;
-        private readonly IReadOnlyList<string> targetIds;
+        private readonly ISet<string> extensionPackageIds;
+        private readonly ISet<string> additionalPackageIds;
         private readonly bool noCache;
         private readonly ILogger logger;
 
@@ -31,21 +32,24 @@ namespace AutoStep.Extensions.NuGetExtensions
         /// <param name="settings">The nuget settings.</param>
         /// <param name="hostContext">The host context.</param>
         /// <param name="packagesToInstall">The set of all packages to install.</param>
-        /// <param name="targetIds">The set of targeted packages (i.e. extension packages).</param>
+        /// <param name="extensionPackageIds">The set of targeted packages (i.e. extension packages).</param>
+        /// <param name="additionalPackageIds">The set of additional requested packages from another resolver.</param>
         /// <param name="noCache">If true, do not use the NuGet cache.</param>
         /// <param name="logger">A logger.</param>
         public NugetInstallablePackageSet(
             ISourceSettings settings,
             IHostContext hostContext,
             IEnumerable<SourcePackageDependencyInfo> packagesToInstall,
-            IReadOnlyList<string> targetIds,
+            ISet<string> extensionPackageIds,
+            ISet<string> additionalPackageIds,
             bool noCache,
             ILogger logger)
         {
             this.settings = settings;
             this.hostContext = hostContext;
             this.packagesToInstall = packagesToInstall;
-            this.targetIds = targetIds;
+            this.extensionPackageIds = extensionPackageIds;
+            this.additionalPackageIds = additionalPackageIds;
             this.noCache = noCache;
             this.logger = logger;
         }
@@ -135,6 +139,17 @@ namespace AutoStep.Extensions.NuGetExtensions
                         entryPoint = libItems.FirstOrDefault(f => Path.GetFileName(f) == package.Id + ".dll");
                     }
 
+                    var packageDepType = PackageDependencyTypes.Dependency;
+
+                    if (extensionPackageIds.Contains(package.Id))
+                    {
+                        packageDepType = PackageDependencyTypes.ExtensionPackage;
+                    }
+                    else if (additionalPackageIds.Contains(package.Id))
+                    {
+                        packageDepType = PackageDependencyTypes.AdditionalRootPackage;
+                    }
+
                     // Create a package entry from the installed package.
                     var packageEntry = new PackageMetadata(
                         package.Id,
@@ -142,7 +157,7 @@ namespace AutoStep.Extensions.NuGetExtensions
                         installedPath,
                         entryPoint,
                         libItems,
-                        targetIds!.Contains(package.Id),
+                        packageDepType,
                         package.Dependencies.Select(x => x.Id));
 
                     packageEntries.Add(packageEntry);

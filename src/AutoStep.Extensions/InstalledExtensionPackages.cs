@@ -37,7 +37,7 @@ namespace AutoStep.Extensions
         /// <returns>The filtered package set.</returns>
         public IEnumerable<IPackageMetadata> GetTopLevelPackages()
         {
-            return Packages.Where(x => x.IsTopLevel);
+            return Packages.Where(x => x.DependencyType == PackageDependencyTypes.ExtensionPackage);
         }
 
         /// <summary>

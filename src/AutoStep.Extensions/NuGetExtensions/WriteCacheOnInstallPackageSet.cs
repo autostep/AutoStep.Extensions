@@ -128,13 +128,11 @@ namespace AutoStep.Extensions.NuGetExtensions
 
         private void SaveExtensionDependencyContext(ExtensionResolveContext resolveContext, InstalledExtensionPackages packages)
         {
-            var targetIds = new HashSet<string>(resolveContext.PackageExtensions.Select(x => x.Package!));
-
             var newDepContext = new DependencyContext(
                 hostContext.Target,
                 CompilationOptions.Default,
                 Enumerable.Empty<CompilationLibrary>(),
-                packages.Packages.Select(p => RuntimeLibraryFromPackage(targetIds, p, packages.Packages)),
+                packages.Packages.Select(p => RuntimeLibraryFromPackage(p, packages.Packages)),
                 Enumerable.Empty<RuntimeFallbacks>());
 
             // Write the dependency file.
@@ -146,13 +144,13 @@ namespace AutoStep.Extensions.NuGetExtensions
             }
         }
 
-        private RuntimeLibrary RuntimeLibraryFromPackage(ISet<string> topLevelPackageIds, IPackageMetadata package, IReadOnlyList<IPackageMetadata> allPackages)
+        private RuntimeLibrary RuntimeLibraryFromPackage(IPackageMetadata package, IReadOnlyList<IPackageMetadata> allPackages)
         {
             var runtimeAssetGroup = new RuntimeAssetGroup(hostContext.Target.Runtime, package.LibFiles.Where(f => Path.GetExtension(f) == ".dll")
                                                                                          .Select(f => GetRuntimeFile(package, f)));
 
             return new RuntimeLibrary(
-                      topLevelPackageIds.Contains(package.PackageId) ? ExtensionRuntimeLibraryTypes.RootPackage : ExtensionRuntimeLibraryTypes.Dependency,
+                      package.DependencyType,
                       package.PackageId,
                       package.PackageVersion,
                       null,

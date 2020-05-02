@@ -76,7 +76,7 @@ namespace AutoStep.Extensions.LocalExtensions
                     destinationDirectory,
                     entryPoint,
                     libFiles,
-                    true));
+                    PackageDependencyTypes.ExtensionPackage));
             }
 
             return new InstalledExtensionPackages(packageMetadata);
