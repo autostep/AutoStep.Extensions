@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http.Headers;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Packaging.Core;
-using NuGet.Packaging.Signing;
 
 namespace AutoStep.Extensions
 {
@@ -15,14 +9,17 @@ namespace AutoStep.Extensions
     /// </summary>
     internal class CompositeExtensionResolver : IExtensionPackagesResolver
     {
+        private readonly IHostContext hostContext;
         private readonly IExtensionPackagesResolver[] resolvers;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CompositeExtensionResolver"/> class.
         /// </summary>
+        /// <param name="hostContext">The host context.</param>
         /// <param name="resolvers">The set opf wrapped resolvers.</param>
-        public CompositeExtensionResolver(params IExtensionPackagesResolver[] resolvers)
+        public CompositeExtensionResolver(IHostContext hostContext, params IExtensionPackagesResolver[] resolvers)
         {
+            this.hostContext = hostContext;
             this.resolvers = resolvers;
         }
 
@@ -40,7 +37,7 @@ namespace AutoStep.Extensions
                 resolved.AddFirst(await resolver.ResolvePackagesAsync(resolveContext, cancelToken));
             }
 
-            return new CompositeInstallablePackageSet(resolved);
+            return new CompositeInstallablePackageSet(hostContext, resolved);
         }
     }
 }

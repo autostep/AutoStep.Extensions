@@ -67,7 +67,7 @@ namespace AutoStep.Extensions.NuGetExtensions
             }
 
             // Wrap the package set with one that updates the deps.json file.
-            return new WriteCacheOnInstallPackageSet(dependencyJsonFile, hostContext, resolveContext, nugetLoadedPackages);
+            return new WriteCacheOnInstallPackageSet(dependencyJsonFile, hostContext, nugetLoadedPackages);
         }
     }
 }

@@ -73,7 +73,9 @@ namespace AutoStep.Extensions.NuGetExtensions
                 // The available packages list will contain the set of all packages to use.
                 var availablePackages = new HashSet<SourcePackageDependencyInfo>(PackageIdentityComparer.Default);
 
-                var targetIds = new List<string>();
+                var packageExtensionIds = new HashSet<string>();
+                var additionalPackageIds = new HashSet<string>();
+
                 var allPackageIds = new List<string>();
 
                 foreach (var package in resolveContext.PackageExtensions)
@@ -87,7 +89,7 @@ namespace AutoStep.Extensions.NuGetExtensions
                     }
 
                     // Configured extensions make up our 'target' packages.
-                    targetIds.Add(packageIdentity.Id);
+                    packageExtensionIds.Add(packageIdentity.Id);
                     allPackageIds.Add(packageIdentity.Id);
 
                     // Search the graph of all the package dependencies to get the full set of available packages.
@@ -104,6 +106,7 @@ namespace AutoStep.Extensions.NuGetExtensions
                         throw new ExtensionLoadException(string.Format(CultureInfo.CurrentCulture, Messages.NuGetPackagesResolver_AdditionalDependencyNotFound, additionalPackage.Id));
                     }
 
+                    additionalPackageIds.Add(packageIdentity.Id);
                     allPackageIds.Add(packageIdentity.Id);
 
                     // Search the graph of all the package dependencies to get the full set of available packages.
@@ -114,7 +117,7 @@ namespace AutoStep.Extensions.NuGetExtensions
                 var resolverContext = new PackageResolverContext(
                        DependencyBehavior.Lowest,
                        allPackageIds,
-                       targetIds,
+                       packageExtensionIds,
                        Enumerable.Empty<PackageReference>(),
                        Enumerable.Empty<PackageIdentity>(),
                        availablePackages,
@@ -127,7 +130,7 @@ namespace AutoStep.Extensions.NuGetExtensions
                 var packagesToInstall = resolver.Resolve(resolverContext, CancellationToken.None)
                                                 .Select(p => availablePackages.Single(x => PackageIdentityComparer.Default.Equals(x, p)));
 
-                return new NugetInstallablePackageSet(sourceSettings, hostContext, packagesToInstall, targetIds, noCache, logger);
+                return new NugetInstallablePackageSet(sourceSettings, hostContext, packagesToInstall, packageExtensionIds, additionalPackageIds, noCache, logger);
             }
             catch (Exception ex)
             {

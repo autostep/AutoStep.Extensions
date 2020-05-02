@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -50,6 +51,58 @@ namespace AutoStep.Extensions.IntegrationTests
 
                 AttachToDummyProject(loadedExtensions, context.Configuration);
             }
+        }
+
+        [Fact]
+        public async Task PreviouslyLoadedExtensionPackageRemovedFromInstallLocationAutomatically()
+        {
+            using var context1 = GetExtensionTestContext(nameof(PreviouslyLoadedExtensionPackageRemovedFromInstallLocationAutomatically), @"
+            {
+                ""localExtensions"": [
+                    { ""folder"": ""LocalExtension"" }
+                ]
+            }", includeNuGet: true);
+
+            var setLoader = new ExtensionSetLoader(context1.RootDirectory, context1.PackageInstallDirectory, LogFactory, "autostep");
+
+            var resolvedPackages = await setLoader.ResolveExtensionsAsync(
+                context1.Sources,
+                context1.Extensions,
+                context1.FolderExtensions,
+                false,
+                CancellationToken.None);
+
+            resolvedPackages.IsValid.Should().BeTrue();
+
+            var installedSet1 = await resolvedPackages.InstallAsync(CancellationToken.None);
+
+            var path = installedSet1.Packages.First(x => x.PackageId == "AutoStep.Extensions.LocalExtension").PackageFolder;
+
+            Directory.Exists(path).Should().BeTrue();
+
+            // Now do it again, but without any extensions.
+            using var context2 = GetExtensionTestContext(nameof(PreviouslyLoadedExtensionPackageRemovedFromInstallLocationAutomatically), @"
+            {
+            }", includeNuGet: true);
+
+            resolvedPackages = await setLoader.ResolveExtensionsAsync(
+                context2.Sources,
+                context2.Extensions,
+                context2.FolderExtensions,
+                false,
+                CancellationToken.None);
+
+            resolvedPackages.IsValid.Should().BeTrue();
+
+            var installedSet2 = await resolvedPackages.InstallAsync(CancellationToken.None);
+
+            installedSet2.Packages.Should().BeEmpty();
+
+            // The same path should no longer exist.
+            Directory.Exists(path).Should().BeFalse();
+
+            // In fact, there should be no directories in the folder.
+            Directory.GetDirectories(context1.PackageInstallDirectory).Should().BeEmpty();
         }
     }
 }

@@ -17,7 +17,7 @@ namespace AutoStep.Extensions
         /// <param name="packageFolder">An absolute path to the package's installed folder.</param>
         /// <param name="entryPoint">The relative path to an optional entry point assembly for the package.</param>
         /// <param name="libFiles">The set of all available library files.</param>
-        /// <param name="isTopLevel">Indicates whether the specified package is a top-level dependency (as opposed to a nested chain dependency).</param>
+        /// <param name="dependencyType">Provides the package category (from <see cref="PackageDependencyTypes"/>).</param>
         /// <param name="dependencies">The set of package dependencies for this package.</param>
         public PackageMetadata(
             string packageId,
@@ -25,7 +25,7 @@ namespace AutoStep.Extensions
             string packageFolder,
             string? entryPoint,
             IEnumerable<string> libFiles,
-            bool isTopLevel,
+            string dependencyType,
             IEnumerable<string>? dependencies = null)
         {
             PackageId = packageId;
@@ -33,7 +33,7 @@ namespace AutoStep.Extensions
             PackageFolder = packageFolder;
             LibFiles = libFiles.ToList();
             EntryPoint = entryPoint;
-            IsTopLevel = isTopLevel;
+            DependencyType = dependencyType;
             Dependencies = dependencies ?? Enumerable.Empty<string>();
         }
 
@@ -53,7 +53,7 @@ namespace AutoStep.Extensions
         public string? EntryPoint { get; }
 
         /// <inheritdoc/>
-        public bool IsTopLevel { get; }
+        public string DependencyType { get; }
 
         /// <inheritdoc/>
         public IEnumerable<string> Dependencies { get; }
