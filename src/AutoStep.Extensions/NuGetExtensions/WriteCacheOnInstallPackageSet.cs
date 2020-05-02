@@ -20,7 +20,6 @@ namespace AutoStep.Extensions.NuGetExtensions
     {
         private readonly string dependencyJsonFile;
         private readonly IHostContext hostContext;
-        private readonly ExtensionResolveContext resolveContext;
         private readonly IInstallablePackageSet wrappedPackageSet;
 
         /// <summary>
@@ -28,13 +27,11 @@ namespace AutoStep.Extensions.NuGetExtensions
         /// </summary>
         /// <param name="dependencyJsonFile">The path to the dependency JSON file.</param>
         /// <param name="hostContext">The host context.</param>
-        /// <param name="resolveContext">The extension resolve context.</param>
         /// <param name="wrappedPackageSet">The backing set.</param>
-        public WriteCacheOnInstallPackageSet(string dependencyJsonFile, IHostContext hostContext, ExtensionResolveContext resolveContext, IInstallablePackageSet wrappedPackageSet)
+        public WriteCacheOnInstallPackageSet(string dependencyJsonFile, IHostContext hostContext, IInstallablePackageSet wrappedPackageSet)
         {
             this.dependencyJsonFile = dependencyJsonFile;
             this.hostContext = hostContext;
-            this.resolveContext = resolveContext;
             this.wrappedPackageSet = wrappedPackageSet;
         }
 
@@ -54,7 +51,7 @@ namespace AutoStep.Extensions.NuGetExtensions
             {
                 var result = await wrappedPackageSet.InstallAsync(cancelToken);
 
-                SaveExtensionDependencyContext(resolveContext, result);
+                SaveExtensionDependencyContext(result);
 
                 return result;
             }
@@ -126,7 +123,7 @@ namespace AutoStep.Extensions.NuGetExtensions
             return createdString;
         }
 
-        private void SaveExtensionDependencyContext(ExtensionResolveContext resolveContext, InstalledExtensionPackages packages)
+        private void SaveExtensionDependencyContext(InstalledExtensionPackages packages)
         {
             var newDepContext = new DependencyContext(
                 hostContext.Target,
