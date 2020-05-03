@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -70,9 +69,8 @@ namespace AutoStep.Extensions.LocalExtensions
                     entryPoint = project.EntryPointDllName;
                 }
 
-                packageMetadata.Add(new PackageMetadata(
-                    project.ProjectName,
-                    project.ProjectVersion,
+                packageMetadata.Add(new LocalExtensionPackageMetadata(
+                    project,
                     destinationDirectory,
                     entryPoint,
                     libFiles,

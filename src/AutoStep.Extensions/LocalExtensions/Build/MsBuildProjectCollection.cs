@@ -144,7 +144,7 @@ namespace AutoStep.Extensions.LocalExtensions.Build
                 var outputDirectory = projInstance.GetPropertyValue("TargetDir");
                 var outputDllName = projInstance.GetPropertyValue("AssemblyName") + ".dll";
 
-                yield return new LocalProjectPackage(packageId, version, outputDirectory, outputDllName);
+                yield return new LocalProjectPackage(proj.ProjectInstance.Directory, packageId, version, outputDirectory, outputDllName);
             }
         }
 
