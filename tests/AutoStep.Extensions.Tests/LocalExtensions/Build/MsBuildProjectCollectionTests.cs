@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using AutoStep.Extensions.LocalExtensions.Build;
 using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -24,7 +25,7 @@ namespace AutoStep.Extensions.Tests.LocalExtensions.Build
             var mockHostContext = new Mock<IHostContext>(MockBehavior.Strict);
             mockHostContext.Setup(x => x.DependencySuppliedByHost(It.IsAny<PackageDependency>())).Returns(false);
 
-            var projectCollection = MsBuildProjectCollection.Create(new[] { TestProjectFile }, NullLogger.Instance, mockHostContext.Object);
+            var projectCollection = MsBuildProjectCollection.Create(new[] { TestProjectFile }, NullLogger.Instance, mockHostContext.Object, CancellationToken.None);
 
             var deps = projectCollection.GetAllDependencies();
 
@@ -42,7 +43,7 @@ namespace AutoStep.Extensions.Tests.LocalExtensions.Build
             var mockHostContext = new Mock<IHostContext>(MockBehavior.Strict);
             mockHostContext.Setup(x => x.DependencySuppliedByHost(It.IsAny<PackageDependency>())).Returns(false);
 
-            var projectCollection = MsBuildProjectCollection.Create(new[] { TestProjectFile }, NullLogger.Instance, mockHostContext.Object);
+            var projectCollection = MsBuildProjectCollection.Create(new[] { TestProjectFile }, NullLogger.Instance, mockHostContext.Object, CancellationToken.None);
 
             var deps = projectCollection.GetAllDependencies();
 
@@ -55,7 +56,7 @@ namespace AutoStep.Extensions.Tests.LocalExtensions.Build
             var mockHostContext = new Mock<IHostContext>(MockBehavior.Strict);
             mockHostContext.Setup(x => x.DependencySuppliedByHost(It.IsAny<PackageDependency>())).Returns(false);
 
-            var projectCollection = MsBuildProjectCollection.Create(new[] { TestProjectFile }, NullLogger.Instance, mockHostContext.Object);
+            var projectCollection = MsBuildProjectCollection.Create(new[] { TestProjectFile }, NullLogger.Instance, mockHostContext.Object, CancellationToken.None);
 
             var deps = projectCollection.GetAllDependencies();
 
@@ -76,7 +77,7 @@ namespace AutoStep.Extensions.Tests.LocalExtensions.Build
                 return false;
             });
 
-            var projectCollection = MsBuildProjectCollection.Create(new[] { TestProjectFile }, NullLogger.Instance, mockHostContext.Object);
+            var projectCollection = MsBuildProjectCollection.Create(new[] { TestProjectFile }, NullLogger.Instance, mockHostContext.Object, CancellationToken.None);
 
             var deps = projectCollection.GetAllDependencies();
 
@@ -86,45 +87,39 @@ namespace AutoStep.Extensions.Tests.LocalExtensions.Build
         }
 
         [Fact]
-        public void GetProjectsAsInstallablePackagesReturnsCorrectDetails()
+        public void GetProjectMetadataReturnsCorrectDetails()
         {
-            var projectCollection = MsBuildProjectCollection.Create(new[] { TestProjectFile }, NullLogger.Instance, new Mock<IHostContext>().Object);
+            var projectCollection = MsBuildProjectCollection.Create(new[] { TestProjectFile }, NullLogger.Instance, new Mock<IHostContext>().Object, CancellationToken.None);
 
-            var packages = projectCollection.GetProjectsAsInstallablePackages();
+            var metadata = projectCollection.GetProjectMetadata(TestProjectFile, true);
 
-            packages.Should().HaveCount(1);
-
-            var package = packages.First();
-
-            package.ProjectName.Should().Be("AutoStep.Extensions.LocalExtension");
-            package.ProjectVersion.Should().Be("1.0.0-custom.1");
-            package.EntryPointDllName.Should().Be("LocalExtension.dll");
+            metadata.PackageId.Should().Be("AutoStep.Extensions.LocalExtension");
+            metadata.Version.Should().Be("1.0.0-custom.1");
+            metadata.OutputFileName.Should().Be("LocalExtension.dll");
 
             var projectFolder = Path.GetDirectoryName(TestProjectFile);
-            var expectedDirectory = Path.Combine(projectFolder!, "bin", "Release", "netstandard2.1") + Path.DirectorySeparatorChar;
+            metadata.Directory.Should().Be(projectFolder);
 
-            package.BinaryDirectory.Should().Be(expectedDirectory);
+            var expectedDirectory = Path.Combine(projectFolder!, "bin", "Release", "netstandard2.1") + Path.DirectorySeparatorChar;
+            metadata.OutputDirectory.Should().Be(expectedDirectory);
         }
 
         [Fact]
-        public void GetProjectsAsInstallablePackagesReturnsDebugDirectoryWhenDebugModeEnabled()
+        public void GetProjectMetadataReturnsDebugDirectoryWhenDebugModeEnabled()
         {
-            var projectCollection = MsBuildProjectCollection.Create(new[] { TestProjectFile }, NullLogger.Instance, new Mock<IHostContext>().Object, debugMode: true);
+            var projectCollection = MsBuildProjectCollection.Create(new[] { TestProjectFile }, NullLogger.Instance, new Mock<IHostContext>().Object, CancellationToken.None, debugMode: true);
 
-            var packages = projectCollection.GetProjectsAsInstallablePackages();
+            var metadata = projectCollection.GetProjectMetadata(TestProjectFile, true);
 
-            packages.Should().HaveCount(1);
-
-            var package = packages.First();
-
-            package.ProjectName.Should().Be("AutoStep.Extensions.LocalExtension");
-            package.ProjectVersion.Should().Be("1.0.0-custom.1");
-            package.EntryPointDllName.Should().Be("LocalExtension.dll");
+            metadata.PackageId.Should().Be("AutoStep.Extensions.LocalExtension");
+            metadata.Version.Should().Be("1.0.0-custom.1");
+            metadata.OutputFileName.Should().Be("LocalExtension.dll");
 
             var projectFolder = Path.GetDirectoryName(TestProjectFile);
-            var expectedDirectory = Path.Combine(projectFolder!, "bin", "Debug", "netstandard2.1") + Path.DirectorySeparatorChar;
+            metadata.Directory.Should().Be(projectFolder);
 
-            package.BinaryDirectory.Should().Be(expectedDirectory);
+            var expectedDirectory = Path.Combine(projectFolder!, "bin", "Debug", "netstandard2.1") + Path.DirectorySeparatorChar;
+            metadata.OutputDirectory.Should().Be(expectedDirectory);
         }
     }
 }

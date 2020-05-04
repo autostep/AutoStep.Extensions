@@ -27,7 +27,7 @@ namespace AutoStep.Extensions.LocalExtensions
         }
 
         /// <inheritdoc/>
-        public IEnumerable<string> PackageIds => packages.Select(x => x.ProjectName);
+        public IEnumerable<string> PackageIds => packages.Select(x => x.PackageId);
 
         /// <inheritdoc/>
         public bool IsValid => true;
@@ -46,7 +46,7 @@ namespace AutoStep.Extensions.LocalExtensions
             // Go through the projects and copy them.
             foreach (var project in packages)
             {
-                var destinationDirectory = Path.Combine(rootExtensionDir, project.ProjectName + "." + project.ProjectVersion);
+                var destinationDirectory = Path.Combine(rootExtensionDir, project.PackageId + "." + project.ProjectVersion);
 
                 // Delete the target before copying.
                 if (Directory.Exists(destinationDirectory))

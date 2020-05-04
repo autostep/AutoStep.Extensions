@@ -11,7 +11,7 @@ using Xunit.Abstractions;
 
 namespace AutoStep.Extensions.Tests.LocalExtensions
 {    
-    [Collection("Build")]
+    [Collection("BuildNoParallel")]
     public class LocalExtensionResolverTests : TestLoggingBase
     {
         private string testProjectsFolder = Path.GetFullPath("../../../../projects/", Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!);

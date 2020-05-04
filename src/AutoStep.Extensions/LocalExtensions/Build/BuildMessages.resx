@@ -120,4 +120,7 @@
   <data name="FailedToLaunchProcess" xml:space="preserve">
     <value>Failed to launch process: {ex.Message}</value>
   </data>
+  <data name="ProjectNotInCollection" xml:space="preserve">
+    <value>Supplied project path is not in the collection.</value>
+  </data>
 </root>

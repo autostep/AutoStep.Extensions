@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Build.Definition;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Graph;
@@ -16,19 +20,58 @@ namespace AutoStep.Extensions.LocalExtensions.Build
     /// </summary>
     internal class MsBuildProjectCollection : IDisposable
     {
+        private const string ConfigurationProp = "Configuration";
+        private const string ConfigurationValueDebug = "Debug";
+        private const string ConfigurationValueRelease = "Release";
+
+        private const string ItemTypePackageReference = "PackageReference";
+        private const string VersionMeta = "Version";
+        private const string PrivateAssetsMeta = "PrivateAssets";
+        private const string ExcludeAssetsMeta = "ExcludeAssets";
+
+        private const string AssetsOptionAll = "all";
+        private const string AssetsOptionRuntime = "runtime";
+
+        private const string PackageIdProp = "PackageId";
+        private const string MsBuildProjectNameProp = "MSBuildProjectName";
+        private const string VersionProp = "Version";
+
+        private const string TargetDirProp = "TargetDir";
+        private const string AssemblyNameProp = "AssemblyName";
+
+        private const string ItemTypeCompile = "Compile";
+        private const string ItemTypeEmbeddedResource = "EmbeddedResource";
+        private const string ItemTypeContent = "Content";
+
+        private const string CopyToOutputDirectoryMeta = "CopyToOutputDirectory";
+        private const string PreserveNewestMetaValue = "PreserveNewest";
+        private const string AlwaysMetaValue = "Always";
+
         private readonly IHostContext hostContext;
         private readonly ILogger logger;
         private readonly ProjectCollection projectCollection;
         private readonly ProjectGraph graph;
 
-        private MsBuildProjectCollection(IEnumerable<string> projectPaths, IHostContext hostContext, ILogger logger, IDictionary<string, string> configOptions)
+        private MsBuildProjectCollection(IEnumerable<string> projects, IHostContext hostContext, ILogger logger, IDictionary<string, string> configOptions, CancellationToken cancelToken)
         {
-            // Define a project collection, and construct the graph of projects.
             projectCollection = new ProjectCollection(configOptions);
-            graph = new ProjectGraph(projectPaths, configOptions, projectCollection);
+
+            // Construct the graph of projects.
+            graph = new ProjectGraph(
+                projects.Select(x => new ProjectGraphEntryPoint(x, configOptions)),
+                projectCollection,
+                CreateProjectInstance,
+                cancelToken);
 
             this.hostContext = hostContext;
             this.logger = logger;
+        }
+
+        private ProjectInstance CreateProjectInstance(string projectPath, Dictionary<string, string> globalProperties, ProjectCollection projectCollection)
+        {
+            var project = projectCollection.LoadProject(projectPath);
+
+            return project.CreateProjectInstance(ProjectInstanceSettings.ImmutableWithFastItemLookup);
         }
 
         /// <summary>
@@ -37,17 +80,18 @@ namespace AutoStep.Extensions.LocalExtensions.Build
         /// <param name="projectPaths">The set of absolute project paths.</param>
         /// <param name="logger">A logger for the collection.</param>
         /// <param name="hostContext">The host context.</param>
+        /// <param name="cancelToken">A cancellation token for the project graph build.</param>
         /// <param name="debugMode">Whether to use the Debug project configuration.</param>
         /// <returns>A new project collection.</returns>
-        public static MsBuildProjectCollection Create(IEnumerable<string> projectPaths, ILogger logger, IHostContext hostContext, bool debugMode = false)
+        public static MsBuildProjectCollection Create(IEnumerable<string> projectPaths, ILogger logger, IHostContext hostContext, CancellationToken cancelToken, bool debugMode = false)
         {
             // Use MSBuild.
             var configOptions = new Dictionary<string, string>
             {
-                { "Configuration", debugMode ? "Debug" : "Release" },
+                { ConfigurationProp, debugMode ? ConfigurationValueDebug : ConfigurationValueRelease },
             };
 
-            return new MsBuildProjectCollection(projectPaths, hostContext, logger, configOptions);
+            return new MsBuildProjectCollection(projectPaths, hostContext, logger, configOptions, cancelToken);
         }
 
         /// <summary>
@@ -66,30 +110,24 @@ namespace AutoStep.Extensions.LocalExtensions.Build
             return allDeps;
         }
 
-        /// <inheritdoc/>
-        public void Dispose()
-        {
-            projectCollection.Dispose();
-        }
-
         private void VisitProjectForDependencies(ProjectInstance project, HashSet<PackageDependency> dependencies)
         {
-            var packages = project.GetItems("PackageReference");
+            var packages = project.GetItems(ItemTypePackageReference);
 
             foreach (var package in packages)
             {
                 var packageId = package.EvaluatedInclude;
-                var packageVersion = package.GetMetadataValue("Version");
-                var privateAssets = package.GetMetadataValue("PrivateAssets");
-                var excludeAssets = package.GetMetadataValue("ExcludeAssets");
+                var packageVersion = package.GetMetadataValue(VersionMeta);
+                var privateAssets = package.GetMetadataValue(PrivateAssetsMeta);
+                var excludeAssets = package.GetMetadataValue(ExcludeAssetsMeta);
 
-                if (privateAssets.Contains("all", StringComparison.InvariantCultureIgnoreCase) ||
-                    privateAssets.Contains("runtime", StringComparison.InvariantCultureIgnoreCase))
+                if (privateAssets.Contains(AssetsOptionAll, StringComparison.InvariantCultureIgnoreCase) ||
+                    privateAssets.Contains(AssetsOptionRuntime, StringComparison.InvariantCultureIgnoreCase))
                 {
                     // Don't include packages if they won't be copied to the output.
                     continue;
                 }
-                else if (excludeAssets.Contains("runtime", StringComparison.InvariantCultureIgnoreCase))
+                else if (excludeAssets.Contains(AssetsOptionRuntime, StringComparison.InvariantCultureIgnoreCase))
                 {
                     // Don't consume packages that don't bring over the runtime.
                     continue;
@@ -117,35 +155,78 @@ namespace AutoStep.Extensions.LocalExtensions.Build
         }
 
         /// <summary>
-        /// Gets the set of projects in the collection as packages that can be installed.
+        /// Gets the metadata for a given project path.
         /// </summary>
-        /// <returns>The set of project packages.</returns>
-        public IEnumerable<LocalProjectPackage> GetProjectsAsInstallablePackages()
+        /// <param name="projectPath">The project file path.</param>
+        /// <param name="includeSourceFiles">Whether to collect project source file information.</param>
+        /// <returns>A metadata block.</returns>
+        public ProjectMetadata GetProjectMetadata(string projectPath, bool includeSourceFiles)
         {
-            foreach (var proj in graph.EntryPointNodes)
+            var project = graph.ProjectNodes.FirstOrDefault(x => x.ProjectInstance.FullPath == projectPath)?.ProjectInstance;
+
+            if (project is null)
             {
-                var projInstance = proj.ProjectInstance;
-
-                var packageId = projInstance.GetPropertyValue("PackageId");
-
-                if (string.IsNullOrEmpty(packageId))
-                {
-                    packageId = projInstance.GetPropertyValue("MSBuildProjectName");
-                }
-
-                var version = projInstance.GetPropertyValue("Version");
-
-                if (string.IsNullOrEmpty(version))
-                {
-                    // Default it.
-                    version = "1.0.0";
-                }
-
-                var outputDirectory = projInstance.GetPropertyValue("TargetDir");
-                var outputDllName = projInstance.GetPropertyValue("AssemblyName") + ".dll";
-
-                yield return new LocalProjectPackage(proj.ProjectInstance.Directory, packageId, version, outputDirectory, outputDllName);
+                throw new ArgumentException(BuildMessages.ProjectNotInCollection, nameof(projectPath));
             }
+
+            var packageId = project.GetPropertyValue(PackageIdProp);
+
+            if (string.IsNullOrEmpty(packageId))
+            {
+                packageId = project.GetPropertyValue(MsBuildProjectNameProp);
+            }
+
+            var version = project.GetPropertyValue(VersionProp);
+
+            if (string.IsNullOrEmpty(version))
+            {
+                // Default it.
+                version = "1.0.0";
+            }
+
+            var outputDirectory = project.GetPropertyValue(TargetDirProp);
+            var outputDllName = project.GetPropertyValue(AssemblyNameProp) + ".dll";
+
+            return new ProjectMetadata(
+                project.FullPath,
+                project.Directory,
+                packageId,
+                version,
+                outputDirectory,
+                outputDllName,
+                includeSourceFiles ? GetSourceFiles(project) : Array.Empty<string>());
+        }
+
+        private IReadOnlyList<string> GetSourceFiles(ProjectInstance project)
+        {
+            var files = new List<string>();
+
+            // Go through the project and collect all Compile, EmbeddedResource, and Content files (where the Content is copied to the output).
+            foreach (var compileItem in project.GetItems(ItemTypeCompile))
+            {
+                // Store the full path.
+                files.Add(Path.GetFullPath(compileItem.EvaluatedInclude, project.Directory));
+            }
+
+            foreach (var embeddedResource in project.GetItems(ItemTypeEmbeddedResource))
+            {
+                // Store the full path.
+                files.Add(Path.GetFullPath(embeddedResource.EvaluatedInclude, project.Directory));
+            }
+
+            foreach (var content in project.GetItems(ItemTypeContent))
+            {
+                var copyToOutput = content.GetMetadataValue(CopyToOutputDirectoryMeta);
+
+                if (copyToOutput.Equals(PreserveNewestMetaValue, StringComparison.InvariantCultureIgnoreCase) ||
+                    copyToOutput.Equals(AlwaysMetaValue, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    // Store the full path.
+                    files.Add(Path.GetFullPath(content.EvaluatedInclude, project.Directory));
+                }
+            }
+
+            return files;
         }
 
         /// <summary>
@@ -183,6 +264,12 @@ namespace AutoStep.Extensions.LocalExtensions.Build
             }
 
             return success;
+        }
+
+        /// <inheritdoc/>
+        public void Dispose()
+        {
+            projectCollection.Dispose();
         }
     }
 }

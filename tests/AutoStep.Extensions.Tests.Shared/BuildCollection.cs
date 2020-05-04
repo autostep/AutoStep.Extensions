@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Text;
 using Xunit;
 
-namespace AutoStep.Extensions.Tests.Util
+namespace AutoStep.Extensions.Tests.Shared
 {
-    [CollectionDefinition("Build", DisableParallelization = true)]
+    [CollectionDefinition("BuildNoParallel", DisableParallelization = true)]
     public class BuildCollection : ICollectionFixture<MsBuildFixture>
     {
     }
 
-    [CollectionDefinition("BuildAllowParallel")]
+    [CollectionDefinition("Build")]
     public class BuildCollectionParallel : ICollectionFixture<MsBuildFixture>
     {
     }

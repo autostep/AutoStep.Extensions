@@ -9,6 +9,32 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="TestFile1.cs" />
+    <Compile Remove="TestFile2.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="TestFile*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="content.asi" />
+    <None Remove="contentnocopy.asi" />
+    <None Remove="EmbeddedFile.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="contentnocopy.asi" />
+    <Content Include="content.asi">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="SubFolder\EmbeddedFile.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AutoStep" Version="1.0.0-develop.297" />
     <PackageReference Include="Newtonsoft.Json" Version="[12.0.1, 13)" />
     <PackageReference Include="Serilog" Version="2.9.0" />

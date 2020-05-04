@@ -134,18 +134,6 @@ namespace AutoStep.Extensions
             }
         }
 
-        private bool IsValidConstructor(ConstructorInfo constructor)
-        {
-            var constructorArgs = constructor.GetParameters();
-
-            if (constructorArgs.Any(x => x.ParameterType != typeof(ILoggerFactory)))
-            {
-                return false;
-            }
-
-            return true;
-        }
-
         /// <inheritdoc/>
         public void Dispose()
         {
@@ -183,6 +171,18 @@ namespace AutoStep.Extensions
 
             loadContext.Unload();
             loadContext = null!;
+        }
+
+        private bool IsValidConstructor(ConstructorInfo constructor)
+        {
+            var constructorArgs = constructor.GetParameters();
+
+            if (constructorArgs.Any(x => x.ParameterType != typeof(ILoggerFactory)))
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }

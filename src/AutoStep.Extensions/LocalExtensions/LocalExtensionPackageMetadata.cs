@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using AutoStep.Extensions.Abstractions;
 
 namespace AutoStep.Extensions.LocalExtensions
 {
@@ -23,16 +24,28 @@ namespace AutoStep.Extensions.LocalExtensions
             IEnumerable<string> libFiles,
             string dependencyType,
             IEnumerable<string>? dependencies = null)
-            : base(localPackage.ProjectName, localPackage.ProjectVersion, packageFolder, entryPoint, libFiles, dependencyType, dependencies)
+            : base(localPackage.PackageId, localPackage.ProjectVersion, packageFolder, entryPoint, libFiles, dependencyType, dependencies)
         {
+            SourceProjectFile = localPackage.ProjectFile;
             SourceProjectFolder = localPackage.ProjectDirectory;
             SourceBinaryDirectory = localPackage.BinaryDirectory;
+            SourceFiles = localPackage.SourceFiles;
+            WatchMode = localPackage.WatchMode;
         }
+
+        /// <inheritdoc/>
+        public string SourceProjectFile { get; }
 
         /// <inheritdoc/>
         public string SourceProjectFolder { get; }
 
         /// <inheritdoc/>
+        public IReadOnlyList<string> SourceFiles { get; }
+
+        /// <inheritdoc/>
         public string SourceBinaryDirectory { get; }
+
+        /// <inheritdoc/>
+        public PackageWatchMode WatchMode { get; }
     }
 }

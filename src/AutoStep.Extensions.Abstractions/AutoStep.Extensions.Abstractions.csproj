@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <VersionPrefix>1.0.0</VersionPrefix>
+    <RootNamespace>AutoStep.Extensions</RootNamespace>
     <TargetFramework>netstandard2.1</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <CodeAnalysisRuleSet>..\..\Analysis.ruleset</CodeAnalysisRuleSet>

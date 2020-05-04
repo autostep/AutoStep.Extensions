@@ -68,5 +68,14 @@ namespace AutoStep.Extensions.LocalExtensions.Build {
                 return ResourceManager.GetString("FailedToLaunchProcess", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Supplied project path is not in the collection..
+        /// </summary>
+        internal static string ProjectNotInCollection {
+            get {
+                return ResourceManager.GetString("ProjectNotInCollection", resourceCulture);
+            }
+        }
     }
 }

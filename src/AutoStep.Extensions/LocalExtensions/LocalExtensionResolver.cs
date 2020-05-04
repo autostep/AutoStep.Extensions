@@ -46,7 +46,7 @@ namespace AutoStep.Extensions
                 return EmptyValidPackageSet.Instance;
             }
 
-            var projectFilePaths = new List<string>();
+            var configuredProjects = new List<(FolderExtensionConfiguration Config, string Path)>();
             var isValid = true;
 
             // Locate the project paths for each configured folder.
@@ -60,7 +60,7 @@ namespace AutoStep.Extensions
                 }
                 else
                 {
-                    projectFilePaths.Add(projectPath);
+                    configuredProjects.Add((folder, projectPath));
                 }
             }
 
@@ -72,12 +72,12 @@ namespace AutoStep.Extensions
 
                     MsBuildLibraryLoader.EnsureLoaded();
 
-                    using var msBuildContext = MsBuildProjectCollection.Create(projectFilePaths, logger, hostContext);
+                    using var msbuildProjects = MsBuildProjectCollection.Create(configuredProjects.Select(x => x.Path), logger, hostContext, cancelToken);
 
-                    var allDeps = msBuildContext.GetAllDependencies();
+                    var allDeps = msbuildProjects.GetAllDependencies();
 
-                    // Load context.
-                    var projectBuildSuccess = await msBuildContext.Build();
+                    // Build the projects.
+                    var projectBuildSuccess = await msbuildProjects.Build();
 
                     if (projectBuildSuccess)
                     {
@@ -85,9 +85,19 @@ namespace AutoStep.Extensions
 
                         logger.LogInformation(LocalExtensionResolverMessages.ProjectsBuiltOk);
 
-                        var output = msBuildContext.GetProjectsAsInstallablePackages().ToList();
+                        // Go through the configured projects.
+                        var installablePackages = new List<LocalProjectPackage>();
 
-                        return new LocalInstallableSet(output, hostContext);
+                        foreach (var item in configuredProjects)
+                        {
+                            var watchMode = item.Config.Watch ? PackageWatchMode.Full : PackageWatchMode.BinaryOnly;
+
+                            var projectMetadata = msbuildProjects.GetProjectMetadata(item.Path, watchMode == PackageWatchMode.Full);
+
+                            installablePackages.Add(new LocalProjectPackage(projectMetadata, watchMode));
+                        }
+
+                        return new LocalInstallableSet(installablePackages, hostContext);
                     }
                     else
                     {

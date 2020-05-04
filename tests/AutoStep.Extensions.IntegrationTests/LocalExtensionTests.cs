@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoStep.Extensions.IntegrationTests.Utils;
@@ -12,6 +9,7 @@ using Xunit.Abstractions;
 
 namespace AutoStep.Extensions.IntegrationTests
 {
+    [Collection("BuildNoParallel")]
     public class LocalExtensionTests : BaseExtensionTests
     {
         public LocalExtensionTests(ITestOutputHelper outputHelper)
@@ -45,7 +43,7 @@ namespace AutoStep.Extensions.IntegrationTests
             using (var loadedExtensions = installedSet.LoadExtensionsFromPackages<IExtensionEntryPoint>(LogFactory))
             {
                 loadedExtensions.Packages.Should().HaveCount(4);
-                loadedExtensions.Packages.Select(x => x.PackageId).Should().Contain("Newtonsoft.Json", "Serilog", "LocalExtension", "AutoMapper");
+                loadedExtensions.Packages.Select(x => x.PackageId).Should().Contain("Newtonsoft.Json", "Serilog", "AutoStep.Extensions.LocalExtension", "AutoMapper");
 
                 loadedExtensions.ExtensionEntryPoints.Should().HaveCount(1);
 
