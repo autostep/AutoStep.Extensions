@@ -130,7 +130,7 @@ namespace AutoStep.Extensions.Watch
             return IsFileInDirectory(fullPath, binaryDirectory);
         }
 
-        private bool IsFileInDirectory(string filePath, string containingDirectory)
+        private static bool IsFileInDirectory(string filePath, string containingDirectory)
         {
             // If the path starts with the specified containing directory, then they should be the same, provided we've
             // terminated the containingDirectory.

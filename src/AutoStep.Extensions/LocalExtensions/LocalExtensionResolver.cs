@@ -90,7 +90,7 @@ namespace AutoStep.Extensions
 
                         foreach (var item in configuredProjects)
                         {
-                            var watchMode = item.Config.Watch ? PackageWatchMode.Full : PackageWatchMode.BinaryOnly;
+                            var watchMode = item.Config.Watch ? PackageWatchMode.Full : PackageWatchMode.OutputOnly;
 
                             var projectMetadata = msbuildProjects.GetProjectMetadata(item.Path, watchMode == PackageWatchMode.Full);
 

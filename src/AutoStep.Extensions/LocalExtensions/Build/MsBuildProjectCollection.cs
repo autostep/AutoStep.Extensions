@@ -197,7 +197,7 @@ namespace AutoStep.Extensions.LocalExtensions.Build
                 includeSourceFiles ? GetSourceFiles(project) : Array.Empty<string>());
         }
 
-        private IReadOnlyList<string> GetSourceFiles(ProjectInstance project)
+        private static IReadOnlyList<string> GetSourceFiles(ProjectInstance project)
         {
             var files = new List<string>();
 
