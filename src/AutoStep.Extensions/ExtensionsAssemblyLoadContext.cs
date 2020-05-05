@@ -34,16 +34,26 @@ namespace AutoStep.Extensions
 
                 if (matchingFile is object)
                 {
-                    // Full path. Load the assembly into memory and load from that, rather than loading from a given path.
-                    // We don't want to take a lock on the file on-disk.
-                    using (var assemblyStream = new FileStream(Path.GetFullPath(matchingFile, package.PackageFolder), FileMode.Open, FileAccess.Read))
-                    {
-                        return LoadFromStream(assemblyStream);
-                    }
+                    return LoadFromAssemblyPathWithoutLock(Path.GetFullPath(matchingFile, package.PackageFolder));
                 }
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Load an assembly into the context from a given path, without taking a lock on the file.
+        /// </summary>
+        /// <param name="path">The absolute assembly path.</param>
+        /// <returns>A loaded assembly.</returns>
+        public Assembly LoadFromAssemblyPathWithoutLock(string path)
+        {
+            // Load the assembly into memory and load from that, rather than loading from a given path.
+            // We don't want to take a lock on the file on-disk.
+            using (var assemblyStream = new FileStream(path, FileMode.Open, FileAccess.Read))
+            {
+                return LoadFromStream(assemblyStream);
+            }
         }
     }
 }

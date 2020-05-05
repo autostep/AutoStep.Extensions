@@ -63,7 +63,7 @@ namespace AutoStep.Extensions
                     continue;
                 }
 
-                var entryPointAssembly = loadContext.LoadFromAssemblyPath(Path.GetFullPath(package.EntryPoint, package.PackageFolder));
+                var entryPointAssembly = loadContext.LoadFromAssemblyPathWithoutLock(Path.GetFullPath(package.EntryPoint, package.PackageFolder));
 
                 // Find the type that implements the entry point..
                 var extensionType = entryPointAssembly.GetExportedTypes()
