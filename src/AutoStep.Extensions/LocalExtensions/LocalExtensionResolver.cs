@@ -25,16 +25,19 @@ namespace AutoStep.Extensions
 
         private readonly IHostContext hostContext;
         private readonly ILogger logger;
+        private readonly bool useDebugMode;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LocalExtensionResolver"/> class.
         /// </summary>
         /// <param name="hostContext">The host context.</param>
         /// <param name="logger">A logger.</param>
-        public LocalExtensionResolver(IHostContext hostContext, ILogger logger)
+        /// <param name="useDebugBuilds">Indicates whether to use debug builds.</param>
+        public LocalExtensionResolver(IHostContext hostContext, ILogger logger, bool useDebugBuilds)
         {
             this.hostContext = hostContext;
             this.logger = logger;
+            this.useDebugMode = useDebugBuilds;
         }
 
         /// <inheritdoc/>
@@ -72,7 +75,12 @@ namespace AutoStep.Extensions
 
                     MsBuildLibraryLoader.EnsureLoaded();
 
-                    using var msbuildProjects = MsBuildProjectCollection.Create(configuredProjects.Select(x => x.Path), logger, hostContext, cancelToken);
+                    using var msbuildProjects = MsBuildProjectCollection.Create(
+                        configuredProjects.Select(x => x.Path),
+                        logger,
+                        hostContext,
+                        cancelToken,
+                        useDebugMode);
 
                     var allDeps = msbuildProjects.GetAllDependencies();
 

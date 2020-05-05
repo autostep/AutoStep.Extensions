@@ -45,6 +45,7 @@ namespace AutoStep.Extensions
         /// <param name="packageExtensions">A set of package extension configurations, specifying which extensions to install.</param>
         /// <param name="localExtensions">A set of local extension configurations, specifying which folders to load local extensions from.</param>
         /// <param name="noCache">If set to true, then any existing caches will be ignored, and the set of packages will be downloaded directly.</param>
+        /// <param name="localExtensionDebugBuilds">If set to true, then the Debug configuration of local extensions will be used, instead of Release.</param>
         /// <param name="cancelToken">A cancellation token to abort the process.</param>
         /// <returns>An awaitable task, containing the set of resolved packages.</returns>
         public ValueTask<IInstallablePackageSet> ResolveExtensionsAsync(
@@ -52,6 +53,7 @@ namespace AutoStep.Extensions
             IEnumerable<PackageExtensionConfiguration> packageExtensions,
             IEnumerable<FolderExtensionConfiguration> localExtensions,
             bool noCache,
+            bool localExtensionDebugBuilds,
             CancellationToken cancelToken)
         {
             if (sourceSettings is null)
@@ -75,7 +77,7 @@ namespace AutoStep.Extensions
             // Create composite resolver.
             var compositeResolver = new CompositeExtensionResolver(
                 hostContext,
-                new LocalExtensionResolver(hostContext, logger),
+                new LocalExtensionResolver(hostContext, logger, localExtensionDebugBuilds),
                 new NugetFallbackPackageResolver(sourceSettings, hostContext, noCache, logger));
 
             // Context object for the resolve operation.

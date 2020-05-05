@@ -39,6 +39,7 @@ namespace AutoStep.Extensions.IntegrationTests
                 context.Extensions,
                 context.FolderExtensions,
                 false,
+                false,
                 CancellationToken.None);
 
             resolvedPackages.IsValid.Should().BeTrue();

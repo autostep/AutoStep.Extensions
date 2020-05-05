@@ -31,17 +31,25 @@ namespace AutoStep.Extensions.IntegrationTests
             PackageBecomesDirty,
         }
 
+        public enum Build
+        {
+            Release,
+            Debug
+        }
+
         [Theory]
-        [InlineData(Watch.Default, "LocalExtension.csproj", AssertMode.PackageBecomesDirty)]        
-        [InlineData(Watch.Default, "bin/Release/netstandard2.1/LocalExtension.dll", AssertMode.PackageBecomesDirty)]
-        [InlineData(Watch.Default, "bin/Release/netstandard2.1/content.asi", AssertMode.PackageBecomesDirty)]
-        [InlineData(Watch.Default, "TestFile1.cs", AssertMode.PackageStillFine)]
-        [InlineData(Watch.Full, "LocalExtension.csproj", AssertMode.PackageBecomesDirty)]
-        [InlineData(Watch.Full, "TestFile1.cs", AssertMode.PackageBecomesDirty)]
-        [InlineData(Watch.Full, "SubFolder/EmbeddedFile.txt", AssertMode.PackageBecomesDirty)]
-        [InlineData(Watch.Full, "content.asi", AssertMode.PackageBecomesDirty)]
-        [InlineData(Watch.Full, "contentnocopy.asi", AssertMode.PackageStillFine)]
-        public async Task CanWatch(Watch watch, string relativePathToModify, AssertMode assertMode)
+        [InlineData(Watch.Default, Build.Release, "LocalExtension.csproj", AssertMode.PackageBecomesDirty)]        
+        [InlineData(Watch.Default, Build.Release, "bin/Release/netstandard2.1/LocalExtension.dll", AssertMode.PackageBecomesDirty)]
+        [InlineData(Watch.Default, Build.Release, "bin/Release/netstandard2.1/content.asi", AssertMode.PackageBecomesDirty)]
+        [InlineData(Watch.Default, Build.Debug, "bin/Debug/netstandard2.1/LocalExtension.dll", AssertMode.PackageBecomesDirty)]
+        [InlineData(Watch.Default, Build.Debug, "bin/Debug/netstandard2.1/content.asi", AssertMode.PackageBecomesDirty)]
+        [InlineData(Watch.Default, Build.Release, "TestFile1.cs", AssertMode.PackageStillFine)]
+        [InlineData(Watch.Full, Build.Release, "LocalExtension.csproj", AssertMode.PackageBecomesDirty)]
+        [InlineData(Watch.Full, Build.Release, "TestFile1.cs", AssertMode.PackageBecomesDirty)]
+        [InlineData(Watch.Full, Build.Release, "SubFolder/EmbeddedFile.txt", AssertMode.PackageBecomesDirty)]
+        [InlineData(Watch.Full, Build.Release, "content.asi", AssertMode.PackageBecomesDirty)]
+        [InlineData(Watch.Full, Build.Release, "contentnocopy.asi", AssertMode.PackageStillFine)]
+        public async Task CanWatch(Watch watch, Build buildMode, string relativePathToModify, AssertMode assertMode)
         {
             using var context = GetExtensionTestContext(nameof(CanWatch), @$"
             {{
@@ -57,6 +65,7 @@ namespace AutoStep.Extensions.IntegrationTests
                 context.Extensions,
                 context.FolderExtensions,
                 false,
+                buildMode == Build.Debug,
                 CancellationToken.None);
 
             resolvedPackages.IsValid.Should().BeTrue();

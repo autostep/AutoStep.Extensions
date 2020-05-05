@@ -26,7 +26,7 @@ namespace AutoStep.Extensions.Tests.LocalExtensions
         {
             var hostContext = new Mock<IHostContext>().Object;
 
-            var localResolver = new LocalExtensionResolver(hostContext, LogFactory.CreateLogger("test"));
+            var localResolver = new LocalExtensionResolver(hostContext, LogFactory.CreateLogger("test"), false);
 
             // Give it a bad array of packages (because it shouldn't check them). No folder extensions.
             var resolved = await localResolver.ResolvePackagesAsync(new ExtensionResolveContext(new PackageExtensionConfiguration[1], 
@@ -45,7 +45,7 @@ namespace AutoStep.Extensions.Tests.LocalExtensions
     
             var hostContext = new Mock<IHostContext>().Object;
 
-            var localResolver = new LocalExtensionResolver(hostContext, LogFactory.CreateLogger("test"));
+            var localResolver = new LocalExtensionResolver(hostContext, LogFactory.CreateLogger("test"), false);
 
             var folderExtension = new FolderExtensionConfiguration { Folder = testProjectFolder };
 
@@ -65,7 +65,7 @@ namespace AutoStep.Extensions.Tests.LocalExtensions
             var hostContext = new Mock<IHostContext>();
             hostContext.Setup(x => x.RootDirectory).Returns(testProjectsFolder);
 
-            var localResolver = new LocalExtensionResolver(hostContext.Object, LogFactory.CreateLogger("test"));
+            var localResolver = new LocalExtensionResolver(hostContext.Object, LogFactory.CreateLogger("test"), false);
 
             var folderExtension = new FolderExtensionConfiguration { Folder = "LocalExtension" };
 
@@ -85,7 +85,7 @@ namespace AutoStep.Extensions.Tests.LocalExtensions
             var hostContext = new Mock<IHostContext>();
             hostContext.Setup(x => x.RootDirectory).Returns(testProjectsFolder);
 
-            var localResolver = new LocalExtensionResolver(hostContext.Object, LogFactory.CreateLogger("test"));
+            var localResolver = new LocalExtensionResolver(hostContext.Object, LogFactory.CreateLogger("test"), false);
 
             var folderExtension = new FolderExtensionConfiguration { Folder = "NotAFolder" };
 
@@ -103,7 +103,7 @@ namespace AutoStep.Extensions.Tests.LocalExtensions
         {
             var hostContext = new Mock<IHostContext>();
 
-            var localResolver = new LocalExtensionResolver(hostContext.Object, LogFactory.CreateLogger("test"));
+            var localResolver = new LocalExtensionResolver(hostContext.Object, LogFactory.CreateLogger("test"), false);
 
             var folderExtension = new FolderExtensionConfiguration { Folder = testProjectsFolder };
 
@@ -122,7 +122,7 @@ namespace AutoStep.Extensions.Tests.LocalExtensions
             var hostContext = new Mock<IHostContext>();
             hostContext.Setup(x => x.RootDirectory).Returns(testProjectsFolder);
 
-            var localResolver = new LocalExtensionResolver(hostContext.Object, LogFactory.CreateLogger("test"));
+            var localResolver = new LocalExtensionResolver(hostContext.Object, LogFactory.CreateLogger("test"), false);
 
             var folderExtension = new FolderExtensionConfiguration { Folder = "VbLocalExtension" };
 
@@ -142,7 +142,7 @@ namespace AutoStep.Extensions.Tests.LocalExtensions
             var hostContext = new Mock<IHostContext>();
             hostContext.Setup(x => x.RootDirectory).Returns(testProjectsFolder);
 
-            var localResolver = new LocalExtensionResolver(hostContext.Object, LogFactory.CreateLogger("test"));
+            var localResolver = new LocalExtensionResolver(hostContext.Object, LogFactory.CreateLogger("test"), false);
 
 
             var folderExtension = new FolderExtensionConfiguration { Folder = "FsLocalExtension" };
@@ -163,7 +163,7 @@ namespace AutoStep.Extensions.Tests.LocalExtensions
             var hostContext = new Mock<IHostContext>();
             hostContext.Setup(x => x.RootDirectory).Returns(testProjectsFolder);
 
-            var localResolver = new LocalExtensionResolver(hostContext.Object, LogFactory.CreateLogger("test"));
+            var localResolver = new LocalExtensionResolver(hostContext.Object, LogFactory.CreateLogger("test"), false);
 
 
             var resolveContext = new ExtensionResolveContext(

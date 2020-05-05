@@ -34,6 +34,7 @@ namespace AutoStep.Extensions.IntegrationTests
                 context.Extensions,
                 context.FolderExtensions,
                 false,
+                false,
                 CancellationToken.None);
 
             resolvedPackages.IsValid.Should().BeTrue();
@@ -68,6 +69,7 @@ namespace AutoStep.Extensions.IntegrationTests
                 context1.Extensions,
                 context1.FolderExtensions,
                 false,
+                false,
                 CancellationToken.None);
 
             resolvedPackages.IsValid.Should().BeTrue();
@@ -87,6 +89,7 @@ namespace AutoStep.Extensions.IntegrationTests
                 context2.Sources,
                 context2.Extensions,
                 context2.FolderExtensions,
+                false,
                 false,
                 CancellationToken.None);
 
