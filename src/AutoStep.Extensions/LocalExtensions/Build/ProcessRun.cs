@@ -69,7 +69,7 @@ namespace AutoStep.Extensions.LocalExtensions.Build
                 // Lock access to the output buffer in case there is STDOUT and STDERR at the same time.
                 lock (outputBuilder)
                 {
-                    outputBuilder.Append(eventArgs.Data);
+                    outputBuilder.AppendLine(eventArgs.Data);
                 }
             };
 
@@ -77,7 +77,7 @@ namespace AutoStep.Extensions.LocalExtensions.Build
             {
                 lock (outputBuilder)
                 {
-                    outputBuilder.Append(eventArgs.Data);
+                    outputBuilder.AppendLine(eventArgs.Data);
                 }
             };
 
