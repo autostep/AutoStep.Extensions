@@ -58,7 +58,7 @@ namespace AutoStep.Extensions.NuGetExtensions
             if (!resolveContext.PackageExtensions.Any() && resolveContext.AdditionalPackagesRequired.Count == 0)
             {
                 // Nothing to do, no packages to install.
-                return EmptyValidPackageSet.Instance;
+                return new EmptyValidPackageSet(hostContext.Environment);
             }
 
             using var cacheContext = new SourceCacheContext();

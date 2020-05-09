@@ -62,12 +62,12 @@ namespace AutoStep.Extensions
             // Delete any directories in the extensions folder that are not part of the complete set.
             CleanExtensionsDirectory(allPackages);
 
-            return new InstalledExtensionPackages(allPackages);
+            return new InstalledExtensionPackages(hostContext.Environment, allPackages);
         }
 
         private void CleanExtensionsDirectory(List<IPackageMetadata> allPackages)
         {
-            var extensionsRoot = hostContext.ExtensionsDirectory;
+            var extensionsRoot = hostContext.Environment.ExtensionsDirectory;
 
             var allFolders = new HashSet<string>(Directory.GetDirectories(extensionsRoot), StringComparer.CurrentCultureIgnoreCase);
 

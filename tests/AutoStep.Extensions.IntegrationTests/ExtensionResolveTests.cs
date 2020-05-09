@@ -26,7 +26,7 @@ namespace AutoStep.Extensions.IntegrationTests
                 ]
             }");
 
-            var setLoader = new ExtensionSetLoader(context.RootDirectory, context.PackageInstallDirectory, LogFactory, "autostep");
+            var setLoader = new ExtensionSetLoader(context.Environment, LogFactory, "autostep");
 
             var resolvedPackages = await setLoader.ResolveExtensionsAsync(
                 context.Sources,
@@ -60,7 +60,7 @@ namespace AutoStep.Extensions.IntegrationTests
                 ]
             }", includeNuGet: true);
 
-            var setLoader = new ExtensionSetLoader(context.RootDirectory, context.PackageInstallDirectory, LogFactory, "autostep");
+            var setLoader = new ExtensionSetLoader(context.Environment, LogFactory, "autostep");
 
             var resolvedPackages = await setLoader.ResolveExtensionsAsync(
                 context.Sources,
@@ -95,7 +95,7 @@ namespace AutoStep.Extensions.IntegrationTests
                 ]
             }");
 
-            var setLoader = new ExtensionSetLoader(context.RootDirectory, context.PackageInstallDirectory, LogFactory, "autostep");
+            var setLoader = new ExtensionSetLoader(context.Environment, LogFactory, "autostep");
 
             var resolvedPackages = await setLoader.ResolveExtensionsAsync(
                 context.Sources,

@@ -11,13 +11,15 @@ namespace AutoStep.Extensions
     /// </summary>
     internal class EmptyValidPackageSet : IInstallablePackageSet
     {
-        /// <summary>
-        /// Gets the singleton instance of the empty package set.
-        /// </summary>
-        public static IInstallablePackageSet Instance { get; } = new EmptyValidPackageSet();
+        private readonly IAutoStepEnvironment environment;
 
-        private EmptyValidPackageSet()
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EmptyValidPackageSet"/> class.
+        /// </summary>
+        /// <param name="environment">The environment block.</param>
+        public EmptyValidPackageSet(IAutoStepEnvironment environment)
         {
+            this.environment = environment;
         }
 
         /// <inheritdoc/>
@@ -32,7 +34,10 @@ namespace AutoStep.Extensions
         /// <inheritdoc/>
         public ValueTask<InstalledExtensionPackages> InstallAsync(CancellationToken cancelToken)
         {
-            return new ValueTask<InstalledExtensionPackages>(InstalledExtensionPackages.Empty);
+            return new ValueTask<InstalledExtensionPackages>(
+                new InstalledExtensionPackages(
+                    environment,
+                    Array.Empty<IPackageMetadata>()));
         }
     }
 }

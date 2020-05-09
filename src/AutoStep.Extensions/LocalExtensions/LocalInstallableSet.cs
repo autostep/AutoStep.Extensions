@@ -39,7 +39,7 @@ namespace AutoStep.Extensions.LocalExtensions
         public async ValueTask<InstalledExtensionPackages> InstallAsync(CancellationToken cancelToken)
         {
             // Install the packages (copy the files over).
-            var rootExtensionDir = hostContext.ExtensionsDirectory;
+            var rootExtensionDir = hostContext.Environment.ExtensionsDirectory;
 
             var packageMetadata = new List<IPackageMetadata>();
 
@@ -77,7 +77,7 @@ namespace AutoStep.Extensions.LocalExtensions
                     PackageDependencyTypes.ExtensionPackage));
             }
 
-            return new InstalledExtensionPackages(packageMetadata);
+            return new InstalledExtensionPackages(hostContext.Environment, packageMetadata);
         }
 
         /// <summary>

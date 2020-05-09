@@ -19,21 +19,15 @@ namespace AutoStep.Extensions
         /// <summary>
         /// Initializes a new instance of the <see cref="ExtensionSetLoader"/> class.
         /// </summary>
-        /// <param name="rootDirectory">The root directory of the project.</param>
-        /// <param name="packageInstallDirectory">The directory where installed extension packages should be placed.</param>
+        /// <param name="environment">The host environment.</param>
         /// <param name="loggerFactory">A logger factory to which the extension load process will write information.</param>
         /// <param name="extensionPackageTag">An optional package tag to filter the set of nuget packages that will be considered as 'entry points', and therefore implicitly loaded.</param>
-        public ExtensionSetLoader(string rootDirectory, string packageInstallDirectory, ILoggerFactory loggerFactory, string? extensionPackageTag)
+        public ExtensionSetLoader(IAutoStepEnvironment environment, ILoggerFactory loggerFactory, string? extensionPackageTag)
         {
-            if (!Path.IsPathFullyQualified(rootDirectory))
-            {
-                throw new ArgumentException(Messages.ExtensionSetLoader_ExtensionDirectoryMustBeFullyQualified);
-            }
-
             var hostAssembly = typeof(ExtensionSetLoader).Assembly;
 
             // Need the dependency context for the host assembly, create a host context from that.
-            hostContext = new HostContext(hostAssembly, rootDirectory, packageInstallDirectory, extensionPackageTag);
+            hostContext = new HostContext(hostAssembly, environment, extensionPackageTag);
 
             logger = loggerFactory.CreateLogger<ExtensionSetLoader>();
         }
@@ -72,7 +66,7 @@ namespace AutoStep.Extensions
             }
 
             // Ensure that the extensions directory exists.
-            Directory.CreateDirectory(hostContext.ExtensionsDirectory);
+            Directory.CreateDirectory(hostContext.Environment.ExtensionsDirectory);
 
             // Create composite resolver.
             var compositeResolver = new CompositeExtensionResolver(

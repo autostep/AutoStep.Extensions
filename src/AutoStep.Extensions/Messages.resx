@@ -171,14 +171,17 @@
   <data name="CachedPackagesResolver_RootPackagesValid" xml:space="preserve">
     <value>Set of root packages is valid; verifying package files.</value>
   </data>
+  <data name="DirectoryMustBeAbsolute" xml:space="preserve">
+    <value>Provided directory must be an absolute path.</value>
+  </data>
   <data name="ExtensionSetLoader_ExtensionDirectoryMustBeFullyQualified" xml:space="preserve">
     <value>Extension directory must be a fully-qualified path.</value>
   </data>
-  <data name="HostContext_DirectoryMustBeAbsolute" xml:space="preserve">
-    <value>Provided directory must be an absolute path.</value>
-  </data>
   <data name="InvalidPackageResolver_CannotInstallInvalidSet" xml:space="preserve">
     <value>Cannot install an invalid package set.</value>
+  </data>
+  <data name="LoadedExtensions_BadConstructor" xml:space="preserve">
+    <value>Invalid constructor used; this is unexpected; constructor should have been filtered out.</value>
   </data>
   <data name="LoadedExtensions_CannotLoadEntryPoint" xml:space="preserve">
     <value>Cannot load the entry point for the {0} extension. Extension entry points must be assignable to {1}, and have a public constructor with only ILoggerFactory (optionally) as a constructor argument.</value>

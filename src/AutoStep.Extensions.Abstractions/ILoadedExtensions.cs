@@ -15,6 +15,11 @@ namespace AutoStep.Extensions.Abstractions
         IEnumerable<IPackageMetadata> Packages { get; }
 
         /// <summary>
+        /// Gets the autostep environment details.
+        /// </summary>
+        IAutoStepEnvironment Environment { get; }
+
+        /// <summary>
         /// Checks whether a package with a given ID has been loaded.
         /// </summary>
         /// <param name="packageId">The package ID.</param>

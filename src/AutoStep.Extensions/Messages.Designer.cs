@@ -223,6 +223,15 @@ namespace AutoStep.Extensions {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Provided directory must be an absolute path..
+        /// </summary>
+        internal static string DirectoryMustBeAbsolute {
+            get {
+                return ResourceManager.GetString("DirectoryMustBeAbsolute", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Extension directory must be a fully-qualified path..
         /// </summary>
         internal static string ExtensionSetLoader_ExtensionDirectoryMustBeFullyQualified {
@@ -232,20 +241,20 @@ namespace AutoStep.Extensions {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Provided directory must be an absolute path..
-        /// </summary>
-        internal static string HostContext_DirectoryMustBeAbsolute {
-            get {
-                return ResourceManager.GetString("HostContext_DirectoryMustBeAbsolute", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Cannot install an invalid package set..
         /// </summary>
         internal static string InvalidPackageResolver_CannotInstallInvalidSet {
             get {
                 return ResourceManager.GetString("InvalidPackageResolver_CannotInstallInvalidSet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid constructor used; this is unexpected; constructor should have been filtered out..
+        /// </summary>
+        internal static string LoadedExtensions_BadConstructor {
+            get {
+                return ResourceManager.GetString("LoadedExtensions_BadConstructor", resourceCulture);
             }
         }
         

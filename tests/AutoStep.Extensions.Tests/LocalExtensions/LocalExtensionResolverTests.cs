@@ -63,7 +63,7 @@ namespace AutoStep.Extensions.Tests.LocalExtensions
         public async Task LocatesExtensionProjectInFolderRelativePath()
         {
             var hostContext = new Mock<IHostContext>();
-            hostContext.Setup(x => x.RootDirectory).Returns(testProjectsFolder);
+            hostContext.Setup(x => x.Environment.RootDirectory).Returns(testProjectsFolder);
 
             var localResolver = new LocalExtensionResolver(hostContext.Object, LogFactory.CreateLogger("test"), false);
 
@@ -83,7 +83,7 @@ namespace AutoStep.Extensions.Tests.LocalExtensions
         public async Task NonExistentProjectFolderError()
         {
             var hostContext = new Mock<IHostContext>();
-            hostContext.Setup(x => x.RootDirectory).Returns(testProjectsFolder);
+            hostContext.Setup(x => x.Environment.RootDirectory).Returns(testProjectsFolder);
 
             var localResolver = new LocalExtensionResolver(hostContext.Object, LogFactory.CreateLogger("test"), false);
 
@@ -120,7 +120,7 @@ namespace AutoStep.Extensions.Tests.LocalExtensions
         public async Task LoadsVbExtensionProject()
         {
             var hostContext = new Mock<IHostContext>();
-            hostContext.Setup(x => x.RootDirectory).Returns(testProjectsFolder);
+            hostContext.Setup(x => x.Environment.RootDirectory).Returns(testProjectsFolder);
 
             var localResolver = new LocalExtensionResolver(hostContext.Object, LogFactory.CreateLogger("test"), false);
 
@@ -140,7 +140,7 @@ namespace AutoStep.Extensions.Tests.LocalExtensions
         public async Task LoadsFSharpExtensionProject()
         {
             var hostContext = new Mock<IHostContext>();
-            hostContext.Setup(x => x.RootDirectory).Returns(testProjectsFolder);
+            hostContext.Setup(x => x.Environment.RootDirectory).Returns(testProjectsFolder);
 
             var localResolver = new LocalExtensionResolver(hostContext.Object, LogFactory.CreateLogger("test"), false);
 
@@ -161,7 +161,7 @@ namespace AutoStep.Extensions.Tests.LocalExtensions
         public async Task LoadsMultipleExtensionProjects()
         {
             var hostContext = new Mock<IHostContext>();
-            hostContext.Setup(x => x.RootDirectory).Returns(testProjectsFolder);
+            hostContext.Setup(x => x.Environment.RootDirectory).Returns(testProjectsFolder);
 
             var localResolver = new LocalExtensionResolver(hostContext.Object, LogFactory.CreateLogger("test"), false);
 

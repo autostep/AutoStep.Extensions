@@ -68,7 +68,7 @@ namespace AutoStep.Extensions.NuGetExtensions
         {
             if (!packagesToInstall.Any())
             {
-                return InstalledExtensionPackages.Empty;
+                return new InstalledExtensionPackages(hostContext.Environment, Array.Empty<IPackageMetadata>());
             }
 
             using var cacheContext = new SourceCacheContext();
@@ -78,7 +78,7 @@ namespace AutoStep.Extensions.NuGetExtensions
                 cacheContext.MaxAge = DateTimeOffset.UtcNow;
             }
 
-            var packagePathResolver = new PackagePathResolver(hostContext.ExtensionsDirectory, true);
+            var packagePathResolver = new PackagePathResolver(hostContext.Environment.ExtensionsDirectory, true);
             var packageExtractionContext = new PackageExtractionContext(
                 PackageSaveMode.Defaultv3,
                 XmlDocFileSaveMode.Skip,
@@ -168,7 +168,7 @@ namespace AutoStep.Extensions.NuGetExtensions
                 }
             }
 
-            return new InstalledExtensionPackages(packageEntries);
+            return new InstalledExtensionPackages(hostContext.Environment, packageEntries);
         }
     }
 }

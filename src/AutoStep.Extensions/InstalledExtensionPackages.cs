@@ -13,18 +13,20 @@ namespace AutoStep.Extensions
     public class InstalledExtensionPackages
     {
         /// <summary>
-        /// Gets a singleton 'empty' package set.
-        /// </summary>
-        public static InstalledExtensionPackages Empty { get; } = new InstalledExtensionPackages(Array.Empty<IPackageMetadata>());
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="InstalledExtensionPackages"/> class.
         /// </summary>
+        /// <param name="environment">The autostep host and execution environment.</param>
         /// <param name="packages">The set of package metadata.</param>
-        public InstalledExtensionPackages(IReadOnlyList<IPackageMetadata> packages)
+        public InstalledExtensionPackages(IAutoStepEnvironment environment, IReadOnlyList<IPackageMetadata> packages)
         {
+            Environment = environment;
             Packages = packages;
         }
+
+        /// <summary>
+        /// Gets the autostep host and execution environment.
+        /// </summary>
+        public IAutoStepEnvironment Environment { get; }
 
         /// <summary>
         /// Gets the set of loaded package metadata.

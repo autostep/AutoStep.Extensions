@@ -60,7 +60,7 @@ namespace AutoStep.Extensions.NuGetExtensions
                 if (packageSet is object)
                 {
                     logger.LogDebug(Messages.CachedPackagesResolver_CacheValid);
-                    return new AlreadyInstalledPackagesSet(new InstalledExtensionPackages(packageSet));
+                    return new AlreadyInstalledPackagesSet(new InstalledExtensionPackages(hostContext.Environment, packageSet));
                 }
                 else
                 {
@@ -247,7 +247,7 @@ namespace AutoStep.Extensions.NuGetExtensions
         {
             var loadedPackages = new List<PackageMetadata>();
             var isValid = true;
-            var packagePathResolver = new PackagePathResolver(hostContext.ExtensionsDirectory, true);
+            var packagePathResolver = new PackagePathResolver(hostContext.Environment.ExtensionsDirectory, true);
 
             foreach (var runtimeLib in knownCache.RuntimeLibraries)
             {

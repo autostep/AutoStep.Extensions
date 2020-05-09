@@ -32,7 +32,7 @@ namespace AutoStep.Extensions.NuGetExtensions
             ILogger logger)
         {
             // Determine the full dependency file.
-            dependencyJsonFile = Path.Combine(hostContext.ExtensionsDirectory, ExtensionDependencyFile);
+            dependencyJsonFile = Path.Combine(hostContext.Environment.ExtensionsDirectory, ExtensionDependencyFile);
             this.sourceSettings = sourceSettings;
             this.hostContext = hostContext;
             this.noCache = noCache;

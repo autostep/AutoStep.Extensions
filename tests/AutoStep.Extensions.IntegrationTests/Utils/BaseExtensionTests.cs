@@ -29,15 +29,14 @@ namespace AutoStep.Extensions.IntegrationTests.Utils
                 IEnumerable<PackageExtensionConfiguration> extensions,
                 IEnumerable<FolderExtensionConfiguration> folderExtensions)
             {
-                RootDirectory = rootDirectory;
-                PackageInstallDirectory = packageInstallDir;
+                Environment = new AutoStepEnvironment(rootDirectory, packageInstallDir);
                 Configuration = configuration;
                 Sources = sources;
                 Extensions = extensions;
                 FolderExtensions = folderExtensions;
             }
 
-            public string RootDirectory { get; }
+            public IAutoStepEnvironment Environment { get; }
 
             public IConfiguration Configuration { get; }
 
@@ -47,13 +46,11 @@ namespace AutoStep.Extensions.IntegrationTests.Utils
 
             public IEnumerable<FolderExtensionConfiguration> FolderExtensions { get; }
 
-            public string PackageInstallDirectory { get; internal set; }
-
             public void Dispose()
             {
-                if (Directory.Exists(PackageInstallDirectory))
+                if (Directory.Exists(Environment.ExtensionsDirectory))
                 {
-                    Directory.Delete(PackageInstallDirectory, true);
+                    Directory.Delete(Environment.ExtensionsDirectory, true);
                 }
             }
         }

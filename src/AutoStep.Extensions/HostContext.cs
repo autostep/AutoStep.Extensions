@@ -23,34 +23,21 @@ namespace AutoStep.Extensions
         /// Initializes a new instance of the <see cref="HostContext"/> class.
         /// </summary>
         /// <param name="hostAssembly">An assembly indicating the host context.</param>
-        /// <param name="rootDirectory">The root directory of the host project.</param>
-        /// <param name="packageInstallDirectory">The directory to install packages in.</param>
+        /// <param name="environment">The host project environment.</param>
         /// <param name="extensionPackageTag">An optional extension packages tag.</param>
-        public HostContext(Assembly hostAssembly, string rootDirectory, string packageInstallDirectory, string? extensionPackageTag)
+        public HostContext(Assembly hostAssembly, IAutoStepEnvironment environment, string? extensionPackageTag)
         {
             if (hostAssembly is null)
             {
                 throw new ArgumentNullException(nameof(hostAssembly));
             }
 
-            if (!Path.IsPathFullyQualified(rootDirectory))
-            {
-                throw new ArgumentException(Messages.HostContext_DirectoryMustBeAbsolute, nameof(rootDirectory));
-            }
-
-            if (!Path.IsPathFullyQualified(packageInstallDirectory))
-            {
-                throw new ArgumentException(Messages.HostContext_DirectoryMustBeAbsolute, nameof(packageInstallDirectory));
-            }
-
             hostDependencyContext = DependencyContext.Load(hostAssembly);
             FrameworkName = hostDependencyContext.Target.Framework;
             TargetFramework = NuGetFramework.ParseFrameworkName(FrameworkName, DefaultFrameworkNameProvider.Instance);
             frameworkReducer = new FrameworkReducer();
+            Environment = environment;
             EntryPointPackageTag = extensionPackageTag;
-
-            RootDirectory = rootDirectory;
-            ExtensionsDirectory = packageInstallDirectory;
         }
 
         /// <inheritdoc/>
@@ -63,13 +50,10 @@ namespace AutoStep.Extensions
         public TargetInfo Target => hostDependencyContext.Target;
 
         /// <inheritdoc/>
+        public IAutoStepEnvironment Environment { get; }
+
+        /// <inheritdoc/>
         public string? EntryPointPackageTag { get; }
-
-        /// <inheritdoc/>
-        public string RootDirectory { get; }
-
-        /// <inheritdoc/>
-        public string ExtensionsDirectory { get; }
 
         /// <inheritdoc/>
         public IEnumerable<string> GetFrameworkFiles(IEnumerable<FrameworkSpecificGroup> frameworkGroup)

@@ -46,7 +46,7 @@ namespace AutoStep.Extensions
             if (!resolveContext.FolderExtensions.Any())
             {
                 // No folder extensions, short-circuit this.
-                return EmptyValidPackageSet.Instance;
+                return new EmptyValidPackageSet(hostContext.Environment);
             }
 
             var configuredProjects = new List<(FolderExtensionConfiguration Config, string Path)>();
@@ -141,7 +141,7 @@ namespace AutoStep.Extensions
 
             if (!Path.IsPathFullyQualified(directory))
             {
-                directory = Path.GetFullPath(directory, hostContext.RootDirectory);
+                directory = Path.GetFullPath(directory, hostContext.Environment.RootDirectory);
             }
 
             var directoryInfo = new DirectoryInfo(directory);

@@ -3,12 +3,14 @@
 
 namespace LocalExtension
 {
+    using System;
     using AutoStep.Execution;
     using AutoStep.Execution.Dependency;
     using AutoStep.Extensions;
     using AutoStep.Projects;
     using LocalExtensionDependency;
     using Microsoft.Extensions.Configuration;
+    using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
 
@@ -17,6 +19,18 @@ namespace LocalExtension
     /// </summary>
     public class TestEntryPoint : IExtensionEntryPoint
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TestEntryPoint"/> class.
+        /// </summary>
+        /// <param name="logFactory">Expected injected log factory.</param>
+        public TestEntryPoint(ILoggerFactory logFactory)
+        {
+            if (logFactory is null)
+            {
+                throw new ArgumentNullException(nameof(logFactory));
+            }
+        }
+
         /// <inheritdoc/>
         public void AttachToProject(IConfiguration projectConfig, Project project)
         {

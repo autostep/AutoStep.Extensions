@@ -27,7 +27,7 @@ namespace AutoStep.Extensions.IntegrationTests
                 ]
             }", includeNuGet: true);
 
-            var setLoader = new ExtensionSetLoader(context.RootDirectory, context.PackageInstallDirectory, LogFactory, "autostep");
+            var setLoader = new ExtensionSetLoader(context.Environment, LogFactory, "autostep");
 
             var resolvedPackages = await setLoader.ResolveExtensionsAsync(
                 context.Sources,
@@ -62,7 +62,7 @@ namespace AutoStep.Extensions.IntegrationTests
                 ]
             }", includeNuGet: true);
 
-            var setLoader = new ExtensionSetLoader(context1.RootDirectory, context1.PackageInstallDirectory, LogFactory, "autostep");
+            var setLoader = new ExtensionSetLoader(context1.Environment, LogFactory, "autostep");
 
             var resolvedPackages = await setLoader.ResolveExtensionsAsync(
                 context1.Sources,
@@ -103,7 +103,7 @@ namespace AutoStep.Extensions.IntegrationTests
             Directory.Exists(path).Should().BeFalse();
 
             // In fact, there should be no directories in the folder.
-            Directory.GetDirectories(context1.PackageInstallDirectory).Should().BeEmpty();
+            Directory.GetDirectories(context1.Environment.ExtensionsDirectory).Should().BeEmpty();
         }
     }
 }

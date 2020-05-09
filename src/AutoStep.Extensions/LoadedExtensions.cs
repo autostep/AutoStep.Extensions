@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using AutoStep.Extensions.Abstractions;
 using Microsoft.Extensions.Logging;
+using Microsoft.VisualBasic;
 
 namespace AutoStep.Extensions
 {
@@ -17,6 +18,7 @@ namespace AutoStep.Extensions
         where TExtensionEntryPoint : IDisposable
     {
         private readonly List<TExtensionEntryPoint> extensions = new List<TExtensionEntryPoint>();
+
         private readonly IReadOnlyList<string> requiredPackages;
         private readonly InstalledExtensionPackages extPackages;
 
@@ -36,12 +38,17 @@ namespace AutoStep.Extensions
             // Get the set of required extensions.
             var extensions = packages.GetTopLevelPackages();
 
+            this.Environment = packages.Environment;
+
             this.requiredPackages = extensions.Select(x => x.PackageId).ToList();
             this.extPackages = packages;
 
             loadContext = new ExtensionsAssemblyLoadContext(extPackages);
             weakContextReference = new WeakReference(loadContext);
         }
+
+        /// <inheritdoc/>
+        public IAutoStepEnvironment Environment { get; }
 
         /// <inheritdoc/>
         public IEnumerable<IPackageMetadata> Packages => extPackages.Packages;
@@ -77,14 +84,14 @@ namespace AutoStep.Extensions
                     continue;
                 }
 
-                var getValidConstructor = extensionType.GetConstructors().Where(IsValidConstructor).FirstOrDefault();
+                var validConstructor = extensionType.GetConstructors().Where(IsValidConstructor).FirstOrDefault();
 
-                if (getValidConstructor is null)
+                if (validConstructor is null)
                 {
                     throw new ExtensionLoadException(string.Format(CultureInfo.CurrentCulture, Messages.LoadedExtensions_CannotLoadEntryPoint, package.PackageId, typeof(TExtensionEntryPoint).Name));
                 }
 
-                extensions.Add(Construct(extensionType, loggerFactory));
+                extensions.Add(Construct(validConstructor, extensionType, loggerFactory, Environment));
             }
         }
 
@@ -115,17 +122,37 @@ namespace AutoStep.Extensions
             }
         }
 
-        private static TExtensionEntryPoint Construct(Type extensionType, ILoggerFactory logFactory)
+        private static TExtensionEntryPoint Construct(ConstructorInfo? constructor, Type extensionType, ILoggerFactory logFactory, IAutoStepEnvironment environment)
         {
-            var constructor = extensionType.GetConstructor(new[] { typeof(ILoggerFactory) });
-
-            if (constructor is object)
-            {
-                return (TExtensionEntryPoint)constructor.Invoke(new[] { logFactory });
-            }
-
             try
             {
+                if (constructor is object)
+                {
+                    var constructorArgs = constructor.GetParameters();
+
+                    var parameters = new object?[constructorArgs.Length];
+
+                    for (var argIdx = 0; argIdx < constructorArgs.Length; argIdx++)
+                    {
+                        var paramType = constructorArgs[argIdx].ParameterType;
+
+                        if (paramType == typeof(ILoggerFactory))
+                        {
+                            parameters[argIdx] = logFactory;
+                        }
+                        else if (paramType == typeof(IAutoStepEnvironment))
+                        {
+                            parameters[argIdx] = environment;
+                        }
+                        else
+                        {
+                            throw new InvalidOperationException(Messages.LoadedExtensions_BadConstructor);
+                        }
+                    }
+
+                    return (TExtensionEntryPoint)constructor.Invoke(parameters);
+                }
+
                 return (TExtensionEntryPoint)Activator.CreateInstance(extensionType)!;
             }
             catch (Exception ex)
@@ -177,7 +204,7 @@ namespace AutoStep.Extensions
         {
             var constructorArgs = constructor.GetParameters();
 
-            if (constructorArgs.Any(x => x.ParameterType != typeof(ILoggerFactory)))
+            if (constructorArgs.Any(x => x.ParameterType != typeof(ILoggerFactory) && x.ParameterType != typeof(IAutoStepEnvironment)))
             {
                 return false;
             }
