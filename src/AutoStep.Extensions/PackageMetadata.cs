@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using NuGet.Packaging.Core;
 
 namespace AutoStep.Extensions
 {
@@ -57,5 +57,11 @@ namespace AutoStep.Extensions
 
         /// <inheritdoc/>
         public IEnumerable<string> Dependencies { get; }
+
+        /// <inheritdoc/>
+        public string GetPath(params string[] pathParts)
+        {
+            return Path.GetFullPath(Path.Combine(pathParts), PackageFolder);
+        }
     }
 }

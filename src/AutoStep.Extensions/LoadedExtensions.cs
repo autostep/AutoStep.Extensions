@@ -6,7 +6,6 @@ using System.Linq;
 using System.Reflection;
 using AutoStep.Extensions.Abstractions;
 using Microsoft.Extensions.Logging;
-using Microsoft.VisualBasic;
 
 namespace AutoStep.Extensions
 {
@@ -91,7 +90,7 @@ namespace AutoStep.Extensions
                     throw new ExtensionLoadException(string.Format(CultureInfo.CurrentCulture, Messages.LoadedExtensions_CannotLoadEntryPoint, package.PackageId, typeof(TExtensionEntryPoint).Name));
                 }
 
-                extensions.Add(Construct(validConstructor, extensionType, loggerFactory, Environment));
+                extensions.Add(Construct(validConstructor, extensionType, loggerFactory, Environment, package));
             }
         }
 
@@ -105,7 +104,7 @@ namespace AutoStep.Extensions
                 throw new InvalidOperationException(Messages.LoadedExtensions_PackageNotLoaded);
             }
 
-            return Path.GetFullPath(Path.Combine(directoryParts), package.PackageFolder);
+            return package.GetPath(directoryParts);
         }
 
         /// <inheritdoc/>
@@ -122,7 +121,12 @@ namespace AutoStep.Extensions
             }
         }
 
-        private static TExtensionEntryPoint Construct(ConstructorInfo? constructor, Type extensionType, ILoggerFactory logFactory, IAutoStepEnvironment environment)
+        private static TExtensionEntryPoint Construct(
+            ConstructorInfo? constructor,
+            Type extensionType,
+            ILoggerFactory logFactory,
+            IAutoStepEnvironment environment,
+            IPackageMetadata metadata)
         {
             try
             {
@@ -143,6 +147,10 @@ namespace AutoStep.Extensions
                         else if (paramType == typeof(IAutoStepEnvironment))
                         {
                             parameters[argIdx] = environment;
+                        }
+                        else if (paramType == typeof(IPackageMetadata))
+                        {
+                            parameters[argIdx] = metadata;
                         }
                         else
                         {
@@ -204,7 +212,9 @@ namespace AutoStep.Extensions
         {
             var constructorArgs = constructor.GetParameters();
 
-            if (constructorArgs.Any(x => x.ParameterType != typeof(ILoggerFactory) && x.ParameterType != typeof(IAutoStepEnvironment)))
+            if (constructorArgs.Any(x => x.ParameterType != typeof(ILoggerFactory) &&
+                                         x.ParameterType != typeof(IAutoStepEnvironment) &&
+                                         x.ParameterType != typeof(IPackageMetadata)))
             {
                 return false;
             }

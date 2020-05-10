@@ -41,5 +41,12 @@ namespace AutoStep.Extensions
         /// Gets the set of dependent package IDs.
         /// </summary>
         IEnumerable<string> Dependencies { get; }
+
+        /// <summary>
+        /// Gets an absolute path within the package installation folder.
+        /// </summary>
+        /// <param name="pathParts">The parts of the relative path.</param>
+        /// <returns>An absolute path.</returns>
+        string GetPath(params string[] pathParts);
     }
 }
