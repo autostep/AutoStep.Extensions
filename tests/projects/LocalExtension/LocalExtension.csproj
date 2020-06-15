@@ -35,10 +35,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AutoStep" Version="1.0.0-develop.297" />
-    <PackageReference Include="Newtonsoft.Json" Version="[12.0.1, 13)" />
+    <PackageReference Include="AutoStep" Version="1.0.0-develop.324" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="Serilog" Version="2.9.0" />
-    <PackageReference Include="AutoStep.Extensions.Abstractions" Version="1.0.0-*" />
   
     <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.8">
       <PrivateAssets>all</PrivateAssets>
@@ -50,6 +49,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\src\AutoStep.Extensions.Abstractions\AutoStep.Extensions.Abstractions.csproj" />
     <ProjectReference Include="..\LocalExtensionDependency\LocalExtensionDependency.csproj" />
   </ItemGroup>
 

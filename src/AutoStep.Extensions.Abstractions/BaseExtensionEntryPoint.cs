@@ -35,11 +35,6 @@ namespace AutoStep.Extensions
         }
 
         /// <inheritdoc/>
-        public virtual void ConfigureExecutionServices(IConfiguration runConfiguration, ContainerBuilder containerBuilder)
-        {
-        }
-
-        /// <inheritdoc/>
         public virtual void ExtendExecution(IConfiguration projectConfig, TestRun testRun)
         {
         }

@@ -1,4 +1,5 @@
-﻿using AutoStep;
+﻿using Autofac;
+using AutoStep;
 using AutoStep.Execution;
 using AutoStep.Execution.Dependency;
 using AutoStep.Extensions;
@@ -11,10 +12,6 @@ namespace TestExtensionWithEventHandler
     public class TestEntryPoint : IExtensionEntryPoint
     {
         public void AttachToProject(IConfiguration projectConfig, Project project)
-        {
-        }
-
-        public void ConfigureExecutionServices(IConfiguration runConfiguration, IServicesBuilder servicesBuilder)
         {
         }
 

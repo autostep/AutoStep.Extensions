@@ -29,11 +29,10 @@ namespace AutoStep.Extensions.Tests.LocalExtensions.Build
 
             var deps = projectCollection.GetAllDependencies();
 
-            deps.Should().HaveCount(5);
+            deps.Should().HaveCount(4);
             deps.Should().Contain(p => p.Id == "Serilog" && p.VersionRange.ToString() == "[2.9.0, )");
             deps.Should().Contain(p => p.Id == "AutoMapper" && p.VersionRange.ToString() == "[9.0.0, )");
-            deps.Should().Contain(p => p.Id == "Newtonsoft.Json" && p.VersionRange.ToString() == "[12.0.1, 13.0.0)");
-            deps.Should().Contain(p => p.Id == "AutoStep.Extensions.Abstractions");
+            deps.Should().Contain(p => p.Id == "Newtonsoft.Json" && p.VersionRange.ToString() == "[12.0.3, 13.0.0)");
             deps.Should().Contain(p => p.Id == "AutoStep");
         }
 

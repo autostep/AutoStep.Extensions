@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Autofac;
 using AutoStep.Elements.Test;
 using AutoStep.Execution.Contexts;
 using AutoStep.Execution.Events;
@@ -102,7 +103,7 @@ namespace AutoStep.Extensions.IntegrationTests
         {
             public Exception? Error { get; set; }
 
-            public override async ValueTask OnExecuteAsync(IServiceProvider scope, RunContext ctxt, Func<IServiceProvider, RunContext, CancellationToken, ValueTask> nextHandler, CancellationToken cancelToken)
+            public override async ValueTask OnExecuteAsync(ILifetimeScope scope, RunContext ctxt, Func<ILifetimeScope, RunContext, CancellationToken, ValueTask> nextHandler, CancellationToken cancelToken)
             {
                 try
                 {

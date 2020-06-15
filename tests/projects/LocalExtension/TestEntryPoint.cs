@@ -4,6 +4,7 @@
 namespace LocalExtension
 {
     using System;
+    using Autofac;
     using AutoStep.Execution;
     using AutoStep.Execution.Dependency;
     using AutoStep.Extensions;
@@ -38,11 +39,6 @@ namespace LocalExtension
 
             // Use newtonsoft.
             JsonConvert.DeserializeObject<JObject>("{}");
-        }
-
-        /// <inheritdoc/>
-        public void ConfigureExecutionServices(IConfiguration runConfiguration, IServicesBuilder servicesBuilder)
-        {
         }
 
         /// <inheritdoc/>

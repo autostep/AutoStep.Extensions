@@ -1,5 +1,5 @@
-﻿Imports AutoStep.Execution
-Imports AutoStep.Execution.Dependency
+﻿Imports Autofac
+Imports AutoStep.Execution
 Imports AutoStep.Extensions
 Imports AutoStep.Projects
 Imports Microsoft.Extensions.Configuration
@@ -12,10 +12,6 @@ Public Class TestExtension
     End Sub
 
     Public Sub ExtendExecution(projectConfig As IConfiguration, testRun As TestRun) Implements IExtensionEntryPoint.ExtendExecution
-
-    End Sub
-
-    Public Sub ConfigureExecutionServices(runConfiguration As IConfiguration, servicesBuilder As IServicesBuilder) Implements IExtensionEntryPoint.ConfigureExecutionServices
 
     End Sub
 

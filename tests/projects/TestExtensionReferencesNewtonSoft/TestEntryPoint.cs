@@ -1,4 +1,5 @@
 ﻿using System;
+using Autofac;
 using AutoStep;
 using AutoStep.Execution;
 using AutoStep.Execution.Dependency;
@@ -16,10 +17,6 @@ namespace TestExtensionReferencesNewtonSoft
         {
             // Use newtonsoft.
             JsonConvert.DeserializeObject<JObject>("{}");
-        }
-
-        public void ConfigureExecutionServices(IConfiguration runConfiguration, IServicesBuilder servicesBuilder)
-        {
         }
 
         public void Dispose()
