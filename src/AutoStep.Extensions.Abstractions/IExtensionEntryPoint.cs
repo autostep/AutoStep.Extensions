@@ -1,6 +1,6 @@
 ﻿using System;
+using Autofac;
 using AutoStep.Execution;
-using AutoStep.Execution.Dependency;
 using AutoStep.Projects;
 using Microsoft.Extensions.Configuration;
 
@@ -31,7 +31,7 @@ namespace AutoStep.Extensions
         void AttachToProject(IConfiguration projectConfig, Project project);
 
         /// <summary>
-        /// This method is invoked once before each test run (and before <see cref="ConfigureExecutionServices(IConfiguration, IServicesBuilder)"/>),
+        /// This method is invoked once before each test run (and before <see cref="ConfigureExecutionServices(IConfiguration, ContainerBuilder)"/>),
         /// and can be used to customise the test execution process, add event handlers or alter the configuration used for the test run.
         /// </summary>
         /// <param name="projectConfig">The loaded project configuration.</param>
@@ -42,11 +42,11 @@ namespace AutoStep.Extensions
         /// This method is invoked at the start of test execution to allow an extension to register methods into the DI container.
         /// </summary>
         /// <param name="runConfiguration">The configuration for the test run.</param>
-        /// <param name="servicesBuilder">The services builder, in which you can register services for dependency injection during the run.</param>
+        /// <param name="servicesBuilder">The DI container builder, in which you can register services for dependency injection during the run.</param>
         /// <remarks>
         /// Any services registered here will be available for injection into any of the interaction method or step binding classes that were registered
         /// in <see cref="AttachToProject(IConfiguration, Project)"/>.
         /// </remarks>
-        void ConfigureExecutionServices(IConfiguration runConfiguration, IServicesBuilder servicesBuilder);
+        void ConfigureExecutionServices(IConfiguration runConfiguration, ContainerBuilder servicesBuilder);
     }
 }

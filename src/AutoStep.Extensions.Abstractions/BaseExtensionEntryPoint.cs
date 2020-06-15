@@ -1,6 +1,6 @@
 ﻿using System;
+using Autofac;
 using AutoStep.Execution;
-using AutoStep.Execution.Dependency;
 using AutoStep.Projects;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -35,7 +35,7 @@ namespace AutoStep.Extensions
         }
 
         /// <inheritdoc/>
-        public virtual void ConfigureExecutionServices(IConfiguration runConfiguration, IServicesBuilder servicesBuilder)
+        public virtual void ConfigureExecutionServices(IConfiguration runConfiguration, ContainerBuilder containerBuilder)
         {
         }
 

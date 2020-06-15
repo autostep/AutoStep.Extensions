@@ -29,7 +29,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AutoStep" Version="1.0.0-develop.297" />
+    <PackageReference Include="AutoStep" Version="1.0.0-develop.323" />
     
     <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.8">
       <PrivateAssets>all</PrivateAssets>
