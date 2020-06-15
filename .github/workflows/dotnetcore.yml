@@ -30,8 +30,8 @@ jobs:
     - name: Build with dotnet
       run: dotnet build --configuration Release /p:TreatWarningsAsErrors=true
     
-    #- name: Run tests
-    #  run: dotnet test --configuration Release --no-build
+    - name: Run tests
+      run: dotnet test --configuration Release --no-build
       
     - name: Pack Main
       run:  dotnet pack ./src/AutoStep.Extensions/AutoStep.Extensions.csproj --no-build -o artifacts -c Release --version-suffix  ${{ steps.gitversion.outputs.PreReleaseTag }}

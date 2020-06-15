@@ -46,10 +46,11 @@
     <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.113">
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
+    
+    <PackageReference Include="AutoStep.Extensions.Abstractions" Version="1.0.0-*" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\AutoStep.Extensions.Abstractions\AutoStep.Extensions.Abstractions.csproj" />
     <ProjectReference Include="..\LocalExtensionDependency\LocalExtensionDependency.csproj" />
   </ItemGroup>
 
