@@ -44,7 +44,7 @@ namespace AutoStep.Extensions.IntegrationTests
             {
                 loadedExtensions.Packages.Should().HaveCount(1);
                 loadedExtensions.Packages.First().PackageId.Should().Be("TestExtension1");
-                loadedExtensions.Packages.First().PackageVersion.Should().Be("1.0.0-alpha-1");
+                loadedExtensions.Packages.First().PackageVersion.Should().Be("1.0.0-alpha.1");
 
                 File.Exists(loadedExtensions.GetPackagePath("TestExtension1", "lib", "netstandard2.1", "TestExtension1.dll")).Should().BeTrue();
             }
@@ -58,7 +58,7 @@ namespace AutoStep.Extensions.IntegrationTests
                 ""extensions"": [
                     { ""Package"" : ""TestExtensionReferencesNewtonSoft"", ""prerelease"": true }
                 ]
-            }", includeNuGet: true);
+            }", ContextOptions.IncludeNuget);
 
             var setLoader = new ExtensionSetLoader(context.Environment, LogFactory, "autostep");
 
@@ -82,6 +82,40 @@ namespace AutoStep.Extensions.IntegrationTests
                 loadedExtensions.ExtensionEntryPoints.Should().HaveCount(1);
 
                 AttachToDummyProject(loadedExtensions, context.Configuration);
+            }
+        }
+
+        [Fact]
+        public async Task CanDetermineBestVersionOfExtensionWhenPresentInMultipleSources()
+        {
+            using var context = GetExtensionTestContext(nameof(SimplePackageLoad), @"
+            {
+                ""extensions"": [
+                    { ""Package"" : ""TestExtension1"", ""prerelease"": true }
+                ]
+            }", ContextOptions.IncludeSecondaryLocalPackageSource);
+
+            var setLoader = new ExtensionSetLoader(context.Environment, LogFactory, "autostep");
+
+            var resolvedPackages = await setLoader.ResolveExtensionsAsync(
+                context.Sources,
+                context.Extensions,
+                context.FolderExtensions,
+                false,
+                false,
+                CancellationToken.None);
+
+            resolvedPackages.IsValid.Should().BeTrue();
+
+            var installedSet = await resolvedPackages.InstallAsync(CancellationToken.None);
+
+            using (var loadedExtensions = installedSet.LoadExtensionsFromPackages<IExtensionEntryPoint>(LogFactory))
+            {
+                loadedExtensions.Packages.Should().HaveCount(1);
+                loadedExtensions.Packages.First().PackageId.Should().Be("TestExtension1");
+                loadedExtensions.Packages.First().PackageVersion.Should().Be("1.0.0-alpha.10");
+
+                File.Exists(loadedExtensions.GetPackagePath("TestExtension1", "lib", "netstandard2.1", "TestExtension1.dll")).Should().BeTrue();
             }
         }
 
@@ -113,7 +147,7 @@ namespace AutoStep.Extensions.IntegrationTests
             {
                 loadedExtensions.Packages.Should().HaveCount(1);
                 loadedExtensions.Packages.First().PackageId.Should().Be("TestExtension1");
-                loadedExtensions.Packages.First().PackageVersion.Should().Be("1.0.0-alpha-1");
+                loadedExtensions.Packages.First().PackageVersion.Should().Be("1.0.0-alpha.1");
 
                 File.Exists(loadedExtensions.GetPackagePath("TestExtension1", "lib", "netstandard2.1", "TestExtension1.dll")).Should().BeTrue();
             }
@@ -136,7 +170,7 @@ namespace AutoStep.Extensions.IntegrationTests
             {
                 loadedExtensions.Packages.Should().HaveCount(1);
                 loadedExtensions.Packages.First().PackageId.Should().Be("TestExtension1");
-                loadedExtensions.Packages.First().PackageVersion.Should().Be("1.0.0-alpha-1");
+                loadedExtensions.Packages.First().PackageVersion.Should().Be("1.0.0-alpha.1");
 
                 File.Exists(loadedExtensions.GetPackagePath("TestExtension1", "lib", "netstandard2.1", "TestExtension1.dll")).Should().BeTrue();
             }

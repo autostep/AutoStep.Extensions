@@ -55,17 +55,26 @@ namespace AutoStep.Extensions.IntegrationTests.Utils
             }
         }
 
-        protected ExtensionTestContext GetExtensionTestContext(string testName, string jsonConfig, bool includeNuGet = false)
+        [Flags]
+        protected enum ContextOptions
+        {
+            None = 0,
+            IncludeNuget = 1,
+            IncludeSecondaryLocalPackageSource = 2
+        }
+
+        protected ExtensionTestContext GetExtensionTestContext(string testName, string jsonConfig, ContextOptions options = ContextOptions.None)
         {
             var assemblyDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
             // test-packages artifact path.
-            var relativePathToTestPackages = "../../../../../artifacts/testpackages";
+            var primaryLocalPackageFolder = "../../../../../artifacts/testpackages";
+            var secondaryLocalPackageFolder = "../../../../../artifacts/testpackages2";
             var relativePathToTestProjects = "../../../../../tests/projects";
 
             var effectiveRootFolder = Path.GetFullPath(relativePathToTestProjects, assemblyDirectory!);
 
-            var packagesFullPath = Path.GetFullPath(relativePathToTestPackages, assemblyDirectory!);
+            var packagesFullPath = Path.GetFullPath(primaryLocalPackageFolder, assemblyDirectory!);
             var nugetFileUri = new Uri("file://" + packagesFullPath);
 
             var configuration = new ConfigurationBuilder();
@@ -78,13 +87,20 @@ namespace AutoStep.Extensions.IntegrationTests.Utils
 
             var sourceData = new SourceSettings(effectiveRootFolder);
 
-            if (includeNuGet)
+            if (options.HasFlag(ContextOptions.IncludeNuget))
             {
                 sourceData.AppendCustomSources(new[] { nugetFileUri.AbsoluteUri });
             }
             else
             {
                 sourceData.ReplaceCustomSources(new[] { nugetFileUri.AbsoluteUri });
+            }
+
+            if (options.HasFlag(ContextOptions.IncludeSecondaryLocalPackageSource))
+            {
+                var secondaryPackagesFullPath = Path.GetFullPath(secondaryLocalPackageFolder, assemblyDirectory!);
+
+                sourceData.AppendCustomSources(new[] { new Uri("file://" + secondaryPackagesFullPath).AbsoluteUri });
             }
 
             var packageInstallDirectory = Path.Combine(assemblyDirectory!, "testdirs", nameof(ExtensionResolveTests), testName);

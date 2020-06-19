@@ -56,7 +56,7 @@ namespace AutoStep.Extensions.IntegrationTests
                 ""localExtensions"": [
                     {{ ""folder"": ""LocalExtension"", ""watch"": {(watch == Watch.Full).ToString().ToLower()} }}
                 ]
-            }}", includeNuGet: true);
+            }}", ContextOptions.IncludeNuget);
 
             var setLoader = new ExtensionSetLoader(context.Environment, LogFactory, "autostep");
 

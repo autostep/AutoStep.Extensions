@@ -161,6 +161,8 @@ namespace AutoStep.Extensions.NuGetExtensions
         /// </summary>
         private async Task<PackageIdentity?> GetPackageIdentity(string packageId, VersionRange? versionRange, bool permitPreRelease, SourceCacheContext cache, IEnumerable<SourceRepository> repositories, CancellationToken cancelToken)
         {
+            PackageIdentity? selectedPackageId = null;
+
             // Go through each repository.
             // If a repository contains only pre-release packages (e.g. AutoStep CI), and the configuration doesn't permit pre-release versions,
             // the search will look at other ones (e.g. NuGet).
@@ -170,7 +172,7 @@ namespace AutoStep.Extensions.NuGetExtensions
 
                 var allVersions = (await findPackageResource.GetAllVersionsAsync(packageId, cache, logger, cancelToken).ConfigureAwait(false)).ToList();
 
-                NuGetVersion selected;
+                NuGetVersion? selected;
 
                 // Have we specified a version range?
                 if (versionRange != null)
@@ -189,11 +191,25 @@ namespace AutoStep.Extensions.NuGetExtensions
 
                 if (selected is object)
                 {
-                    return new PackageIdentity(packageId, selected);
+                    if (selectedPackageId is null)
+                    {
+                        selectedPackageId = new PackageIdentity(packageId, selected);
+                    }
+                    else if (versionRange is null)
+                    {
+                        if (selected > selectedPackageId.Version)
+                        {
+                            selectedPackageId = new PackageIdentity(packageId, selected);
+                        }
+                    }
+                    else if (versionRange.IsBetter(selectedPackageId.Version, selected))
+                    {
+                        selectedPackageId = new PackageIdentity(packageId, selected);
+                    }
                 }
             }
 
-            return null;
+            return selectedPackageId;
         }
 
         /// <summary>

@@ -1,13 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Version>1.0.0-alpha-1</Version>
+    <VersionPrefix>1.0.0</VersionPrefix>
+    <VersionSuffix>alpha.1</VersionSuffix>
     <TargetFramework>netstandard2.1</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageTags>autostep</PackageTags>
   </PropertyGroup>
 
-  <PropertyGroup>
+  <PropertyGroup>    
     <OutputPath>..\..\..\artifacts\testpackages</OutputPath>
   </PropertyGroup>
 
@@ -18,5 +19,9 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\AutoStep.Extensions.Abstractions\AutoStep.Extensions.Abstractions.csproj" />
   </ItemGroup>
+
+  <Target Condition="'$(DisableSecondPack)' != 'true'" Name="Second Pack" AfterTargets="Pack">
+    <Exec Command="dotnet pack --version-suffix alpha.10 -o ..\..\..\artifacts\testpackages2 --no-build /p:DisableSecondPack=true" />
+  </Target>
 
 </Project>

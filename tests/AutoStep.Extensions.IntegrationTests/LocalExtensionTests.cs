@@ -25,7 +25,7 @@ namespace AutoStep.Extensions.IntegrationTests
                 ""localExtensions"": [
                     { ""folder"": ""LocalExtension"" }
                 ]
-            }", includeNuGet: true);
+            }", ContextOptions.IncludeNuget);
 
             var setLoader = new ExtensionSetLoader(context.Environment, LogFactory, "autostep");
 
@@ -60,7 +60,7 @@ namespace AutoStep.Extensions.IntegrationTests
                 ""localExtensions"": [
                     { ""folder"": ""LocalExtension"" }
                 ]
-            }", includeNuGet: true);
+            }", ContextOptions.IncludeNuget);
 
             var setLoader = new ExtensionSetLoader(context1.Environment, LogFactory, "autostep");
 
@@ -83,7 +83,7 @@ namespace AutoStep.Extensions.IntegrationTests
             // Now do it again, but without any extensions.
             using var context2 = GetExtensionTestContext(nameof(PreviouslyLoadedExtensionPackageRemovedFromInstallLocationAutomatically), @"
             {
-            }", includeNuGet: true);
+            }", ContextOptions.IncludeNuget);
 
             resolvedPackages = await setLoader.ResolveExtensionsAsync(
                 context2.Sources,
